@@ -1,4 +1,5 @@
 import { Quote } from '../quote/types';
+import { RFQLineItem } from '../rfq/types';
 
 /**
  * Deterministic lifecycle status of a procurement commitment.
@@ -67,6 +68,7 @@ export interface QuoteSelectionMetrics {
   isPartial: boolean;
   moq: number;
   moqSatisfied: boolean;
+  uncoveredItems?: string[];
   negotiatedSavings: number;
   supplierDistanceKm?: number;
   isEligible: boolean;
@@ -85,6 +87,7 @@ export interface SelectionComparisonSummary {
   rfqId: string;
   requestedQuantity: number;
   unit: string;
+  lineItems?: RFQLineItem[];
   quotes: QuoteSelectionMetrics[];
   eligibleQuotes: QuoteSelectionMetrics[];
   lowestCostQuoteId?: string;
@@ -154,6 +157,7 @@ export interface ProcurementCommitment {
     productName: string;
     unit: string;
   };
+  lineItems?: RFQLineItem[];
   requestedQuantity: number;
   committedQuantity: number;
   allocations: SupplierAllocation[];

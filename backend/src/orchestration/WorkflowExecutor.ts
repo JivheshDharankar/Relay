@@ -1304,32 +1304,33 @@ export class WorkflowExecutor {
       }
 
       // 12. ReconciliationRecord
+      const reconResult = (workflow as any)._reconciliationResult;
       const totalQuantity = allocationLines.reduce((acc, curr) => acc + curr.quantity, 0);
       await tx.reconciliationRecord.upsert({
         where: { commitmentId: commitment.id },
         update: {
-          status: 'RECONCILED',
-          verifiedFulfilledQuantity: totalQuantity,
-          totalAllocatedQuantity: totalQuantity,
-          authoritativeProcurementAmount: commitment.financials.total,
-          totalAllocatedResidentAmount: commitment.financials.total,
-          isQuantityMatched: true,
-          isMonetaryMatched: true,
-          isSupplierObligationsMatched: true,
-          isPaymentVerified: true,
+          status: reconResult?.status ?? 'RECONCILED',
+          verifiedFulfilledQuantity: reconResult?.verifiedFulfilledQuantity ?? totalQuantity,
+          totalAllocatedQuantity: reconResult?.totalAllocatedQuantity ?? totalQuantity,
+          authoritativeProcurementAmount: reconResult?.authoritativeProcurementAmount ?? commitment.financials.total,
+          totalAllocatedResidentAmount: reconResult?.totalAllocatedResidentAmount ?? commitment.financials.total,
+          isQuantityMatched: reconResult?.isQuantityMatched ?? true,
+          isMonetaryMatched: reconResult?.isMonetaryMatched ?? true,
+          isSupplierObligationsMatched: reconResult?.isSupplierObligationsMatched ?? true,
+          isPaymentVerified: reconResult?.isPaymentVerified ?? true,
           reconciledAt: new Date(),
         },
         create: {
           commitmentId: commitment.id,
-          status: 'RECONCILED',
-          verifiedFulfilledQuantity: totalQuantity,
-          totalAllocatedQuantity: totalQuantity,
-          authoritativeProcurementAmount: commitment.financials.total,
-          totalAllocatedResidentAmount: commitment.financials.total,
-          isQuantityMatched: true,
-          isMonetaryMatched: true,
-          isSupplierObligationsMatched: true,
-          isPaymentVerified: true,
+          status: reconResult?.status ?? 'RECONCILED',
+          verifiedFulfilledQuantity: reconResult?.verifiedFulfilledQuantity ?? totalQuantity,
+          totalAllocatedQuantity: reconResult?.totalAllocatedQuantity ?? totalQuantity,
+          authoritativeProcurementAmount: reconResult?.authoritativeProcurementAmount ?? commitment.financials.total,
+          totalAllocatedResidentAmount: reconResult?.totalAllocatedResidentAmount ?? commitment.financials.total,
+          isQuantityMatched: reconResult?.isQuantityMatched ?? true,
+          isMonetaryMatched: reconResult?.isMonetaryMatched ?? true,
+          isSupplierObligationsMatched: reconResult?.isSupplierObligationsMatched ?? true,
+          isPaymentVerified: reconResult?.isPaymentVerified ?? true,
           reconciledAt: new Date(),
         },
       });

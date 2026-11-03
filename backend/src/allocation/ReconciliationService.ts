@@ -10,6 +10,7 @@ import { FulfillmentOrder } from '../fulfillment/types';
 import { Payment } from '../payment/types';
 import { AllocationAuditService, allocationAuditService } from './AllocationAuditService';
 import {
+  LineReconciliationBreakdown,
   ReconciliationDiscrepancy,
   ReconciliationDiscrepancyType,
   ReconciliationResult,
@@ -103,7 +104,7 @@ export class ReconciliationService {
       return blockedResult;
     }
 
-    // Check B: Quantity Reconciliation
+    // Check B: Quantity Reconciliation (Per-Line Integrity)
     const totalVerifiedFulfilled = fulfillments.reduce(
       (sum, f) => sum + f.fulfilledQuantity,
       0
@@ -113,10 +114,128 @@ export class ReconciliationService {
       0
     );
 
-    const isQuantityMatched = isDecimalEqual(
-      toDecimal(totalAllocatedQuantity),
-      toDecimal(totalVerifiedFulfilled)
-    );
+    // Group resident allocations by line key `${productId}_${unit}`
+    interface AllocationLineGroup {
+      productId: string;
+      productName: string;
+      unit: string;
+      requestedQuantity: number;
+      allocatedQuantity: number;
+    }
+
+    const lineGroupMap = new Map<string, AllocationLineGroup>();
+    for (const alloc of allocations) {
+      const pid = alloc.productId || commitment.product.productId || alloc.productName;
+      const key = `${pid}_${alloc.unit}`;
+      const existing = lineGroupMap.get(key);
+      if (existing) {
+        existing.requestedQuantity += alloc.requestedQuantity;
+        existing.allocatedQuantity += alloc.allocatedQuantity;
+      } else {
+        lineGroupMap.set(key, {
+          productId: pid,
+          productName: alloc.productName,
+          unit: alloc.unit,
+          requestedQuantity: alloc.requestedQuantity,
+          allocatedQuantity: alloc.allocatedQuantity,
+        });
+      }
+    }
+
+    const verifiedFulfillments = fulfillments.filter((f) => f.status === 'VERIFIED');
+
+    // Build per-line reconciliation breakdown
+    const lineBreakdowns: LineReconciliationBreakdown[] = [];
+    const isMultiItem = lineGroupMap.size > 1;
+
+    for (const group of lineGroupMap.values()) {
+      let lineVerifiedQuantity = 0;
+
+      if (!isMultiItem) {
+        // Single-item request: scalar verified fulfillment matches directly
+        lineVerifiedQuantity = totalVerifiedFulfilled;
+      } else {
+        // Multi-item request:
+        // 1. Check if any fulfillments explicitly match by productId or productName & unit
+        const matchingFulfillments = verifiedFulfillments.filter(
+          (f) =>
+            (f.productName.toLowerCase() === group.productName.toLowerCase() && f.unit === group.unit) ||
+            (f.productName.toLowerCase().includes(group.productName.toLowerCase()) && f.unit === group.unit)
+        );
+
+        if (matchingFulfillments.length > 0 && matchingFulfillments.length < verifiedFulfillments.length) {
+          lineVerifiedQuantity = matchingFulfillments.reduce((sum, f) => sum + f.fulfilledQuantity, 0);
+        } else if (purchaseOrders && purchaseOrders.length > 0) {
+          // If a single fulfillment order was issued for the batch PO:
+          // Check if PO lines correspond to this group
+          const poLines = purchaseOrders.flatMap((po) => po.lines);
+          const matchingPoLine = poLines.find(
+            (l) =>
+              l.productName.toLowerCase() === group.productName.toLowerCase() ||
+              l.productName.toLowerCase().includes(group.productName.toLowerCase()) ||
+              group.productName.toLowerCase().includes(l.productName.toLowerCase())
+          );
+
+          if (matchingPoLine) {
+            // If the overall fulfillment was complete, this line received its full quantity
+            if (totalVerifiedFulfilled === totalAllocatedQuantity) {
+              lineVerifiedQuantity = matchingPoLine.quantity;
+            } else if (totalAllocatedQuantity > 0) {
+              // Proportional fulfillment if partial
+              lineVerifiedQuantity = roundQuantity(
+                matchingPoLine.quantity * (totalVerifiedFulfilled / totalAllocatedQuantity)
+              ).toNumber();
+            }
+          } else {
+            lineVerifiedQuantity = group.allocatedQuantity;
+          }
+        } else {
+          // Fallback if no PO lines: if total verified equals total allocated, each line is matched
+          if (totalVerifiedFulfilled === totalAllocatedQuantity) {
+            lineVerifiedQuantity = group.allocatedQuantity;
+          } else if (totalAllocatedQuantity > 0) {
+            lineVerifiedQuantity = roundQuantity(
+              group.allocatedQuantity * (totalVerifiedFulfilled / totalAllocatedQuantity)
+            ).toNumber();
+          }
+        }
+      }
+
+      const isMatched = isDecimalEqual(
+        toDecimal(group.allocatedQuantity),
+        toDecimal(lineVerifiedQuantity)
+      );
+
+      lineBreakdowns.push({
+        productId: group.productId,
+        productName: group.productName,
+        unit: group.unit,
+        requestedQuantity: group.requestedQuantity,
+        allocatedQuantity: group.allocatedQuantity,
+        verifiedFulfilledQuantity: lineVerifiedQuantity,
+        isMatched,
+      });
+    }
+
+    const isQuantityMatched =
+      isDecimalEqual(toDecimal(totalAllocatedQuantity), toDecimal(totalVerifiedFulfilled)) &&
+      lineBreakdowns.every((l) => l.isMatched);
+
+    let reconciliationReason: string | undefined;
+    if (isMultiItem) {
+      if (isQuantityMatched) {
+        reconciliationReason = `Delivered quantities match allocated quantities across all ${lineBreakdowns.length} line items.`;
+      } else {
+        const mismatches = lineBreakdowns
+          .filter((l) => !l.isMatched)
+          .map(
+            (l) =>
+              `${l.productName} (allocated ${l.allocatedQuantity} ${l.unit}, verified ${l.verifiedFulfilledQuantity} ${l.unit})`
+          )
+          .join(', ');
+        reconciliationReason = `Delivered quantities mismatch allocated quantities for: ${mismatches}.`;
+      }
+    }
 
     if (!isQuantityMatched) {
       const diff = subtractDecimals(totalVerifiedFulfilled, totalAllocatedQuantity).toNumber();
@@ -135,7 +254,9 @@ export class ReconciliationService {
           difference: diff,
           affectedResidentOrderIds: allocations.map((a) => a.residentOrderId),
           reasonCode: discType,
-          message: `Allocated quantity (${totalAllocatedQuantity}) does not match verified fulfilled quantity (${totalVerifiedFulfilled})`,
+          message:
+            reconciliationReason ||
+            `Allocated quantity (${totalAllocatedQuantity}) does not match verified fulfilled quantity (${totalVerifiedFulfilled})`,
         })
       );
     }
@@ -273,6 +394,8 @@ export class ReconciliationService {
       isMonetaryMatched,
       isSupplierObligationsMatched,
       isPaymentVerified,
+      lineItems: lineBreakdowns,
+      reason: reconciliationReason,
       discrepancies,
       reconciledAt: finalStatus === 'RECONCILED' ? new Date() : undefined,
       createdAt: new Date(),
