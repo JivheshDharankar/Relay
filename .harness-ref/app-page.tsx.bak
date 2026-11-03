@@ -1,0 +1,206 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Badge } from '@/components/ui';
+import { RequestComposer } from '@/components/relay/RequestComposer';
+import { OrchestrationStepper } from '@/components/execution/OrchestrationStepper';
+import { ExecutiveOutcomeCard } from '@/components/execution/ExecutiveOutcomeCard';
+import { MarketQuotesDrawer } from '@/components/drawers/MarketQuotesDrawer';
+import { DeliveryTrackingDrawer } from '@/components/drawers/DeliveryTrackingDrawer';
+import { AuditLedgerDrawer } from '@/components/drawers/AuditLedgerDrawer';
+import { RecentOrdersFeed } from '@/components/command/RecentOrdersFeed';
+import { ActivePoolsWidget } from '@/components/command/ActivePoolsWidget';
+import { useProcurementWorkflow } from '@/lib/state/useProcurementWorkflow';
+import { getResidentProfile, getCommunity } from '@/lib/api';
+import { ResidentProfile, CommunityData } from '@/types';
+import {
+  ShieldCheck,
+  Building2,
+  Sparkles,
+  AlertCircle,
+  Package,
+  Layers,
+  Zap,
+} from 'lucide-react';
+
+export default function CommandCenterPage() {
+  const [profile, setProfile] = useState<ResidentProfile | null>(null);
+  const [community, setCommunity] = useState<CommunityData | null>(null);
+  const [ordersRefreshCount, setOrdersRefreshCount] = useState(0);
+
+  // Progressive Disclosure Drawer Modals
+  const [showQuotesDrawer, setShowQuotesDrawer] = useState(false);
+  const [showDeliveryDrawer, setShowDeliveryDrawer] = useState(false);
+  const [showAuditDrawer, setShowAuditDrawer] = useState(false);
+
+  const {
+    stage,
+    isLoading,
+    isOrchestrating,
+    isReconciled,
+    isFailed,
+    error,
+    activityEvents,
+    bestOffer,
+    paymentDetails,
+    deliveryStatus,
+    reconciliation,
+    submittedPrompt,
+    startProcurement,
+    resetWorkflow,
+  } = useProcurementWorkflow();
+
+  // Load Resident Profile & Community Metadata
+  useEffect(() => {
+    async function loadContext() {
+      try {
+        const [profData, commData] = await Promise.all([
+          getResidentProfile().catch(() => null),
+          getCommunity().catch(() => null),
+        ]);
+        if (profData) setProfile(profData);
+        if (commData) setCommunity(commData);
+      } catch (err) {
+        console.error('Failed to load initial context', err);
+      }
+    }
+    loadContext();
+  }, []);
+
+  // When procurement is completed, increment refresh trigger to reload orders feed
+  useEffect(() => {
+    if (isReconciled) {
+      setOrdersRefreshCount((c) => c + 1);
+    }
+  }, [isReconciled]);
+
+  const mandateLimit = profile?.activeMandate?.maximumAmount || 8000;
+  const societyName = profile?.societyName || 'Greenview Residency';
+  const displayFlat = profile?.flatNumber
+    ? profile.flatNumber.startsWith('Tower')
+      ? profile.flatNumber
+      : `Tower A-${profile.flatNumber}`
+    : 'Tower A-101';
+
+  return (
+    <div className="py-6 sm:py-8 space-y-6">
+      <Container size="lg">
+        <div className="space-y-6 max-w-4xl mx-auto">
+          {/* 1. Command Center Identity & Context Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-relay-slate-200">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-relay-slate-900 tracking-tight">
+                  {societyName}
+                </span>
+                <span className="text-relay-slate-300">•</span>
+                <span className="text-xs font-mono font-medium text-relay-slate-500">
+                  {displayFlat}
+                </span>
+                <span className="text-relay-slate-300">•</span>
+                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Mandate Active
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-relay-slate-900">
+                Procurement Command Center
+              </h1>
+              <p className="text-xs sm:text-sm text-relay-slate-500 mt-0.5">
+                One natural-language command. Relay pools society demand, evaluates wholesale quotes, and fulfills autonomously.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="px-3 py-1.5 rounded-xl bg-relay-slate-100/80 border border-relay-slate-200 text-xs font-medium text-relay-slate-700 flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-relay-accent" />
+                <span>Pre-authorized Cap: <strong>₹{mandateLimit.toLocaleString()}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Natural Command Composer (Always clean & available) */}
+          <RequestComposer
+            onSubmit={startProcurement}
+            isLoading={isLoading}
+            mandateLimit={mandateLimit}
+            societyName={societyName}
+            flatNumber={displayFlat}
+            initialValue=""
+          />
+
+          {/* 3. Error Banner (if execution stopped or catalog item unsupported) */}
+          {error && (
+            <div className="bg-red-50/90 border border-red-200/90 rounded-2xl p-4 sm:p-5 space-y-2 text-red-900 shadow-subtle animate-in fade-in duration-200">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+                <h3 className="text-sm font-bold text-red-900">Procurement Error</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-red-700 leading-relaxed font-mono">
+                {error}
+              </p>
+              <div className="pt-1 text-[11px] text-red-600">
+                Supported wholesale catalog items: Basmati Rice, Sharbati Whole Wheat Atta, Sunflower Cooking Oil, Laundry Detergent.
+              </div>
+            </div>
+          )}
+
+          {/* 4. Active Procurement Outcome Area (Only appears when active/completed) */}
+          {isOrchestrating && (
+            <OrchestrationStepper
+              events={activityEvents}
+              isComplete={false}
+            />
+          )}
+
+          {isReconciled && bestOffer && (
+            <ExecutiveOutcomeCard
+              bestOffer={bestOffer}
+              paymentDetails={paymentDetails}
+              deliveryStatus={deliveryStatus}
+              reconciliation={reconciliation}
+              submittedPrompt={submittedPrompt}
+              onOpenQuotes={() => setShowQuotesDrawer(true)}
+              onOpenDelivery={() => setShowDeliveryDrawer(true)}
+              onOpenAudit={() => setShowAuditDrawer(true)}
+              onNewRequest={resetWorkflow}
+            />
+          )}
+
+          {/* 5. Recent Unit Orders (Persistent from real PostgreSQL database) */}
+          <RecentOrdersFeed refreshTrigger={ordersRefreshCount} />
+
+          {/* 6. Active Society Demand Pools Preview */}
+          <ActivePoolsWidget community={community} />
+        </div>
+      </Container>
+
+      {/* Progressive Disclosure Drawers / Sheets */}
+      {bestOffer && (
+        <>
+          <MarketQuotesDrawer
+            isOpen={showQuotesDrawer}
+            onClose={() => setShowQuotesDrawer(false)}
+            offer={bestOffer}
+          />
+
+          <DeliveryTrackingDrawer
+            isOpen={showDeliveryDrawer}
+            onClose={() => setShowDeliveryDrawer(false)}
+            status={deliveryStatus?.status || 'DELIVERED'}
+            trackingCode={deliveryStatus?.trackingCode}
+            supplierName={deliveryStatus?.supplierName || bestOffer.supplierName}
+            deliveryAddress={`${displayFlat}, ${societyName}, Pune`}
+          />
+
+          <AuditLedgerDrawer
+            isOpen={showAuditDrawer}
+            onClose={() => setShowAuditDrawer(false)}
+            reconciliation={reconciliation}
+            totalAmount={bestOffer.totalPrice}
+            providerReference={paymentDetails?.providerReference}
+          />
+        </>
+      )}
+    </div>
+  );
+}

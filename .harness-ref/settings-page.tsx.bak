@@ -1,0 +1,224 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Badge, Button } from '@/components/ui';
+import { getResidentProfile } from '@/lib/api';
+import { ResidentProfile } from '@/types';
+import {
+  User,
+  Building2,
+  ShieldCheck,
+  Bell,
+  Lock,
+  CheckCircle2,
+  CreditCard,
+  Key,
+} from 'lucide-react';
+
+export default function SettingsPage() {
+  const [profile, setProfile] = useState<ResidentProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const data = await getResidentProfile();
+        setProfile(data);
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProfile();
+  }, []);
+
+  const displayFlat = profile?.flatNumber
+    ? (profile.flatNumber.startsWith('Tower') ? profile.flatNumber : `Tower A-${profile.flatNumber}`)
+    : 'Tower A-101';
+  const displayEmail = (profile?.email || 'aarav.sharma@greenview.in')
+    .replace('@greenview.example.com', '@greenview.in')
+    .replace('@greenview.residency', '@greenview.in');
+
+  return (
+    <div className="py-8 sm:py-10 space-y-8">
+      <Container size="lg">
+        {/* Header */}
+        <div className="pb-6 border-b border-relay-slate-200">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Badge variant="neutral" size="sm">
+              Settings & Preferences
+            </Badge>
+            <span className="text-xs font-mono text-relay-slate-500">
+              {displayFlat} • Greenview Residency
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-relay-slate-900">
+            Account & Community Settings
+          </h1>
+          <p className="text-xs sm:text-sm text-relay-slate-500 mt-1">
+            Manage your verified community membership, spending mandate guardrails, and privacy controls.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* 1. Resident Identity & Unit Card */}
+          <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-relay-slate-100">
+              <h2 className="text-sm font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <User className="h-4 w-4 text-relay-accent" />
+                <span>Resident Profile</span>
+              </h2>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+                Verified Resident
+              </span>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Full Name
+                </span>
+                <span className="font-semibold text-relay-slate-900 text-sm">
+                  {profile?.name || 'Aarav Sharma'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Email Address
+                </span>
+                <span className="font-mono text-relay-slate-800">
+                  {displayEmail}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Residential Unit
+                </span>
+                <span className="font-semibold text-relay-slate-900">
+                  {displayFlat}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Community Verification Card */}
+          <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-relay-slate-100">
+              <h2 className="text-sm font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-relay-accent" />
+                <span>Apartment Community</span>
+              </h2>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Verified</span>
+              </span>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Society Name
+                </span>
+                <span className="font-semibold text-relay-slate-900 text-sm">
+                  {profile?.societyName || 'Greenview Residency'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Address
+                </span>
+                <span className="text-relay-slate-700">
+                  {profile?.societyAddress || 'Baner-Pashan Link Road, Pune 411045'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                  Procurement SLA
+                </span>
+                <span className="font-semibold text-emerald-700">
+                  12-Hour Local Delivery Guaranteed
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Payment Mandate Status Card */}
+          <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-relay-slate-100">
+              <h2 className="text-sm font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-relay-accent" />
+                <span>Pre-Authorized Mandate</span>
+              </h2>
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                ACTIVE
+              </span>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-relay-slate-600">Authorized Spending Limit</span>
+                <span className="font-bold text-relay-slate-900 font-mono text-sm">
+                  ₹{(profile?.activeMandate?.maximumAmount || 8000).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-1 border-t border-relay-slate-100">
+                <span className="text-relay-slate-600">Auto-Execution Boundary</span>
+                <span className="text-emerald-700 font-semibold">Pre-Approved</span>
+              </div>
+
+              <div className="flex justify-between items-center py-1 border-t border-relay-slate-100">
+                <span className="text-relay-slate-600">Mandate Identifier</span>
+                <span className="font-mono text-relay-slate-600 font-semibold text-xs">
+                  MND-AARAV-8000
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Privacy & Anonymization Invariant */}
+          <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-relay-slate-100">
+              <h2 className="text-sm font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <Lock className="h-4 w-4 text-emerald-600" />
+                <span>Privacy & Anonymization</span>
+              </h2>
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Enforced
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-relay-slate-600">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Zero Vendor PII:</strong> Suppliers receive bulk purchase totals only. Your name, flat number, and contact details are never transmitted.
+                </span>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Unit Boundary Isolation:</strong> Other society residents cannot see your individual order items or spending.
+                </span>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Prompt Data Security:</strong> Internal model thoughts and prompts are never stored in operational ledgers.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
+

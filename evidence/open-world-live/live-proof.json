@@ -1,0 +1,164 @@
+{
+  "provider": "meta-spark-live",
+  "at": "2026-11-02T11:43:27.743Z",
+  "connectivity": "success",
+  "milkIntent": {
+    "status": "ok",
+    "intent": {
+      "originalRequest": "I need 3 litre milk within 12 hours.",
+      "items": [
+        {
+          "productName": "milk",
+          "constraints": [],
+          "resolution": {
+            "status": "resolved",
+            "productId": null,
+            "canonicalName": "milk",
+            "identitySource": "open-world"
+          },
+          "quantity": 3,
+          "unit": "LITRE",
+          "rawUnit": "litre"
+        }
+      ],
+      "deadline": {
+        "maxHours": 12
+      }
+    },
+    "issues": []
+  },
+  "milkFinancials": {
+    "quoteTotal": 254.66,
+    "commitmentTotal": 254.66,
+    "paymentAmount": 254.66,
+    "allocationTotal": 254.66,
+    "procurementCost": 254.66,
+    "reconAuthoritative": 254.66,
+    "reconAllocated": 254.66,
+    "reconDelta": 0,
+    "reconStatus": "RECONCILED",
+    "discrepancies": [],
+    "monetaryMatched": true
+  },
+  "milkProvenance": {
+    "quoteSimulated": true,
+    "lineIdentity": [
+      {
+        "name": "milk",
+        "qty": 3,
+        "src": "open-world"
+      }
+    ],
+    "allocBasisSimulated": true,
+    "reconKeys": [
+      "id",
+      "commitmentId",
+      "status",
+      "commercialBasisSimulated",
+      "verifiedFulfilledQuantity",
+      "totalAllocatedQuantity",
+      "authoritativeProcurementAmount",
+      "totalAllocatedResidentAmount",
+      "isQuantityMatched",
+      "isMonetaryMatched",
+      "isSupplierObligationsMatched",
+      "isPaymentVerified",
+      "discrepancies",
+      "reconciledAt",
+      "createdAt",
+      "updatedAt"
+    ]
+  },
+  "multilingual": [
+    {
+      "text": "मुझे 3 लीटर दूध चाहिए 12 घंटे के अंदर।",
+      "items": [
+        {
+          "productId": null,
+          "productName": "milk",
+          "quantity": 3,
+          "unit": "liters",
+          "identitySource": "open-world"
+        }
+      ]
+    },
+    {
+      "text": "Mujhe 3 litre doodh chahiye within 12 hours.",
+      "items": [
+        {
+          "productId": null,
+          "productName": "milk",
+          "quantity": 3,
+          "unit": "liters",
+          "identitySource": "open-world"
+        }
+      ]
+    },
+    {
+      "text": "मुझे 2 किलो आलू और 1 लीटर तेल चाहिए।",
+      "items": [
+        {
+          "productId": null,
+          "productName": "potato",
+          "quantity": 2,
+          "unit": "kg",
+          "identitySource": "open-world"
+        },
+        {
+          "productId": "44444444-4444-4444-8444-444444444403",
+          "productName": "cooking oil",
+          "quantity": 1,
+          "unit": "liters",
+          "identitySource": "catalog"
+        }
+      ]
+    },
+    {
+      "text": "Mujhe 2 kg basmati rice aur 3 litre milk chahiye.",
+      "items": [
+        {
+          "productId": "44444444-4444-4444-8444-444444444401",
+          "productName": "rice",
+          "quantity": 2,
+          "unit": "kg",
+          "identitySource": "catalog"
+        },
+        {
+          "productId": null,
+          "productName": "milk",
+          "quantity": 3,
+          "unit": "liters",
+          "identitySource": "open-world"
+        }
+      ]
+    }
+  ],
+  "e2e": {
+    "hindi": "COMPLETED",
+    "mixed": "COMPLETED"
+  },
+  "ambiguous": {
+    "status": "unresolved",
+    "intent": {
+      "originalRequest": "I need some milk",
+      "items": [
+        {
+          "productName": "milk",
+          "constraints": [],
+          "resolution": {
+            "status": "unresolved",
+            "reason": "MISSING_QUANTITY"
+          }
+        }
+      ]
+    },
+    "issues": [
+      {
+        "code": "MISSING_QUANTITY",
+        "message": "Item 0 (\"milk\") has no stated quantity.",
+        "itemIndex": 0
+      }
+    ]
+  },
+  "injectionBlocked": true
+}

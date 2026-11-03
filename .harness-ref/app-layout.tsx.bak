@@ -1,0 +1,29 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { BottomNav } from '@/components/shell/BottomNav';
+
+export const metadata: Metadata = {
+  title: 'Relay | AI-first Autonomous Apartment Procurement',
+  description:
+    'AI-first multi-agent procurement and exchange platform for apartment communities. Built for Meta Global AI Developer Hackathon.',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col bg-relay-slate-50 text-relay-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900">
+        <Header />
+        <main className="flex-1 flex flex-col pb-16 md:pb-0">{children}</main>
+        <Footer />
+        <BottomNav />
+      </body>
+    </html>
+  );
+}
+

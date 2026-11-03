@@ -1,0 +1,147 @@
+{
+ "startedAt": "2026-11-03T06:46:00.303Z",
+ "model": "muse-spark-1.3",
+ "provider": "meta",
+ "summary": {
+  "total": 3,
+  "passed": 3,
+  "failed": 0,
+  "unsafe": 0
+ },
+ "results": [
+  {
+   "id": "A01",
+   "category": "A",
+   "request": "2 rolls paper towels",
+   "latencyMs": 11141,
+   "retried": false,
+   "calls": [
+    {
+     "finishReason": "tool_calls",
+     "toolNames": [
+      "extract_procurement_intent"
+     ],
+     "argKeys": [
+      "items",
+      "productName",
+      "quantity",
+      "unit"
+     ],
+     "argsJson": "[{\"items\":[{\"productName\":\"paper towel\",\"quantity\":2,\"unit\":\"roll\"}]}]"
+    }
+   ],
+   "status": "ok",
+   "issues": [],
+   "items": [
+    {
+     "productName": "paper towel",
+     "packaging": "roll",
+     "constraints": [],
+     "resolution": {
+      "status": "resolved",
+      "productId": null,
+      "canonicalName": "paper towel",
+      "identitySource": "open-world"
+     },
+     "quantity": 2,
+     "unit": "PACK",
+     "rawUnit": "roll"
+    }
+   ],
+   "details": null,
+   "classification": "UNDERSTOOD + OPEN_WORLD",
+   "pass": true,
+   "failures": []
+  },
+  {
+   "id": "A02",
+   "category": "A",
+   "request": "3 tubes toothpaste",
+   "latencyMs": 12107,
+   "retried": false,
+   "calls": [
+    {
+     "finishReason": "tool_calls",
+     "toolNames": [
+      "extract_procurement_intent"
+     ],
+     "argKeys": [
+      "items",
+      "productName",
+      "quantity",
+      "unit",
+      "packaging"
+     ],
+     "argsJson": "[{\"items\":[{\"productName\":\"toothpaste\",\"quantity\":3,\"unit\":\"tube\",\"packaging\":\"tube\"}]}]"
+    }
+   ],
+   "status": "ok",
+   "issues": [],
+   "items": [
+    {
+     "productName": "toothpaste",
+     "packaging": "tube",
+     "constraints": [],
+     "resolution": {
+      "status": "resolved",
+      "productId": null,
+      "canonicalName": "toothpaste",
+      "identitySource": "open-world"
+     },
+     "quantity": 3,
+     "unit": "PACK",
+     "rawUnit": "tube"
+    }
+   ],
+   "details": null,
+   "classification": "UNDERSTOOD + OPEN_WORLD",
+   "pass": true,
+   "failures": []
+  },
+  {
+   "id": "A03",
+   "category": "A",
+   "request": "4 strips bandage",
+   "latencyMs": 13457,
+   "retried": false,
+   "calls": [
+    {
+     "finishReason": "tool_calls",
+     "toolNames": [
+      "extract_procurement_intent"
+     ],
+     "argKeys": [
+      "items",
+      "productName",
+      "quantity",
+      "unit",
+      "packaging"
+     ],
+     "argsJson": "[{\"items\":[{\"productName\":\"bandage\",\"quantity\":4,\"unit\":\"strip\",\"packaging\":\"strip\"}]}]"
+    }
+   ],
+   "status": "ok",
+   "issues": [],
+   "items": [
+    {
+     "productName": "bandage",
+     "packaging": "strip",
+     "constraints": [],
+     "resolution": {
+      "status": "resolved",
+      "productId": null,
+      "canonicalName": "bandage",
+      "identitySource": "open-world"
+     },
+     "quantity": 4,
+     "unit": "PACK",
+     "rawUnit": "strip"
+    }
+   ],
+   "details": null,
+   "classification": "UNDERSTOOD + OPEN_WORLD",
+   "pass": true,
+   "failures": []
+  }
+ ]
+}

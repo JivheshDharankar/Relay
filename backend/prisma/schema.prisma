@@ -1,0 +1,851 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+
+enum ResidentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductUnit {
+  KG
+  LITRE
+  GRAM
+  ML
+  PACK
+  UNIT
+}
+
+enum ResidentOrderStatus {
+  PENDING
+  AGGREGATING
+  PROCURED
+  PAYMENT_PENDING
+  PAID
+  FULFILLING
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum CommunityOrderStatus {
+  CREATED
+  PAYMENT_AUTHORIZED
+  PAYMENT_SUCCESS
+  SUPPLIER_CONFIRMED
+  DISPATCHED
+  DELIVERED
+  RECONCILED
+  CANCELLED
+  FAILED
+}
+
+enum SupplierOfferStatus {
+  RECEIVED
+  UNDER_REVIEW
+  REJECTED
+  NEGOTIATING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum NegotiationStatus {
+  STARTED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentMandateStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
+  REVOKED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PROCESSING
+  SUCCESS
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  PREPARING
+  DISPATCHED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum DeliveryAllocationStatus {
+  PENDING
+  ALLOCATED
+  DELIVERED
+  FAILED
+}
+
+enum AuditEventType {
+  REQUEST_CREATED
+  AUTHORIZATION_CHECKED
+  DEMAND_AGGREGATED
+  SUPPLIERS_DISCOVERED
+  OFFER_REJECTED
+  NEGOTIATION_STARTED
+  NEGOTIATION_COMPLETED
+  OFFER_SELECTED
+  ORDER_CREATED
+  PAYMENT_AUTHORIZED
+  PAYMENT_SUCCESS
+  SUPPLIER_CONFIRMED
+  DISPATCHED
+  DELIVERED
+  RECONCILED
+  AGENT_REQUEST_RECEIVED
+  AGENT_TOOL_CALLED
+  AGENT_TOOL_SUCCEEDED
+  AGENT_TOOL_FAILED
+  AGENT_WORKFLOW_COMPLETED
+  AGENT_WORKFLOW_FAILED
+  PAYMENT_EXECUTION_STARTED
+  PAYMENT_EXECUTION_SUCCEEDED
+  PAYMENT_EXECUTION_FAILED
+  SUPPLIER_PO_SUBMITTED
+  SUPPLIER_REJECTED
+  DELIVERY_INITIALIZED
+  DELIVERY_PREPARING
+  DELIVERY_OUT_FOR_DELIVERY
+  ALLOCATION_STARTED
+  ALLOCATION_CALCULATED
+  ALLOCATION_VALIDATED
+  ALLOCATION_FINALIZED
+  ALLOCATION_REJECTED
+  LEDGER_ENTRY_CREATED
+  LEDGER_ADJUSTMENT_CREATED
+  LEDGER_REVERSAL_CREATED
+  RECONCILIATION_STARTED
+  RECONCILIATION_RECONCILED
+  RECONCILIATION_DISCREPANCY
+  RECONCILIATION_BLOCKED
+  WORKFLOW_CREATED
+  WORKFLOW_STAGE_STARTED
+  WORKFLOW_STAGE_COMPLETED
+  WORKFLOW_WAITING
+  WORKFLOW_RETRYING
+  WORKFLOW_BLOCKED
+  WORKFLOW_FAILED
+  WORKFLOW_COMPLETED
+}
+
+enum WorkflowStatus {
+  DRAFT
+  RECEIVED
+  UNDERSTANDING
+  AWAITING_CLARIFICATION
+  DEMAND_CREATED
+  DISCOVERING_SUPPLIERS
+  QUALIFYING_SUPPLIERS
+  REQUESTING_QUOTES
+  WAITING_FOR_QUOTES
+  NEGOTIATING
+  SELECTING_SUPPLIER
+  COMMITTING_PROCUREMENT
+  AUTHORIZING_PAYMENT
+  EXECUTING_PAYMENT
+  FULFILLING
+  DELIVERING
+  VERIFYING_FULFILLMENT
+  ALLOCATING_RESIDENT_DEMAND
+  RECONCILING
+  COMPLETED
+  FAILED
+  BLOCKED
+  CANCELLED
+}
+
+enum WorkflowStage {
+  UNDERSTAND
+  DISCOVER
+  QUALIFY
+  QUOTE
+  NEGOTIATE
+  SELECT
+  COMMIT
+  PAY
+  FULFILL
+  VERIFY
+  ALLOCATE
+  RECONCILE
+  COMPLETE
+}
+
+enum AllocationStatus {
+  PENDING
+  CALCULATED
+  VALIDATED
+  FINALIZED
+  REJECTED
+}
+
+enum ReconciliationStatus {
+  PENDING
+  IN_PROGRESS
+  RECONCILED
+  DISCREPANCY
+  BLOCKED
+}
+
+enum ResidentLedgerEntryType {
+  PROCUREMENT_ALLOCATION
+  ADJUSTMENT
+  REVERSAL
+}
+
+enum ResidentLedgerEntryStatus {
+  POSTED
+  ADJUSTED
+  REVERSED
+}
+
+enum ReconciliationDiscrepancyType {
+  QUANTITY_MISMATCH
+  MONETARY_MISMATCH
+  SUPPLIER_OBLIGATION_MISMATCH
+  PAYMENT_LINKAGE_MISMATCH
+  UNVERIFIED_FULFILLMENT
+  NEGATIVE_VALUE_DETECTED
+  OVER_ALLOCATION_DETECTED
+}
+
+// ---------------------------------------------------------
+// FOUNDATIONAL / SYSTEM MODELS (Milestone 1)
+// ---------------------------------------------------------
+
+/// Minimum foundational record for verifying Prisma/PostgreSQL infrastructure
+model SystemHealthRecord {
+  id        String   @id @default(uuid())
+  service   String   @default("relay-backend")
+  status    String   @default("ok")
+  checkedAt DateTime @default(now())
+  metadata  Json?
+
+  @@map("system_health_records")
+}
+
+// ---------------------------------------------------------
+// COMMUNITY & ACTOR MODELS
+// ---------------------------------------------------------
+
+/// Represents an apartment community (society)
+model Society {
+  id          String   @id @default(uuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  postalCode  String
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  residents       Resident[]
+  residentOrders  ResidentOrder[]
+  communityOrders CommunityOrder[]
+
+  @@map("societies")
+}
+
+/// Represents a resident belonging to a society
+model Resident {
+  id         String         @id @default(uuid())
+  societyId  String
+  name       String
+  email      String         @unique
+  phone      String?
+  flatNumber String?
+  status     ResidentStatus @default(ACTIVE)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  society         Society          @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  residentOrders  ResidentOrder[]
+  paymentMandates PaymentMandate[]
+
+  @@index([societyId])
+  @@index([status])
+  @@map("residents")
+}
+
+/// Represents an authorized supplier capable of fulfilling procurement requests
+model Supplier {
+  id               String         @id @default(uuid())
+  name             String
+  contactEmail     String
+  contactPhone     String
+  address          String
+  city             String
+  state            String
+  postalCode       String
+  latitude         Decimal?       @db.Decimal(9, 6)
+  longitude        Decimal?       @db.Decimal(9, 6)
+  serviceRadiusKm  Decimal        @default(10.0) @db.Decimal(6, 2)
+  reliabilityScore Decimal        @default(1.0) @db.Decimal(3, 2) // Deterministic snapshot [0.00 - 1.00]
+  status           SupplierStatus @default(ACTIVE)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  communityOrders CommunityOrder[]
+  supplierOffers  SupplierOffer[]
+  products        SupplierProduct[]
+
+  @@index([status])
+  @@index([city])
+  @@map("suppliers")
+}
+
+/// Represents a procurement product with controlled measurement units
+model Product {
+  id        String      @id @default(uuid())
+  name      String
+  category  String
+  unit      ProductUnit
+  sku       String?     @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  orderItems          OrderItem[]
+  communityOrderItems CommunityOrderItem[]
+  deliveryAllocations DeliveryAllocation[]
+  supplierProducts    SupplierProduct[]
+
+  @@index([category])
+  @@map("products")
+}
+
+/// Minimal normalized model representing a supplier's product catalog, pricing, and MOQ
+model SupplierProduct {
+  id         String   @id @default(uuid())
+  supplierId String
+  productId  String
+  basePrice  Decimal  @db.Decimal(12, 2)
+  moq        Decimal  @default(1.0) @db.Decimal(10, 4) // Minimum order quantity
+  available  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, productId])
+  @@index([supplierId])
+  @@index([productId])
+  @@map("supplier_products")
+}
+
+// ---------------------------------------------------------
+// RESIDENT ORDERS
+// ---------------------------------------------------------
+
+/// Individual resident procurement request, logically private to the resident
+model ResidentOrder {
+  id               String              @id @default(uuid())
+  idempotencyKey   String?             @unique
+  residentId       String
+  societyId        String
+  communityOrderId String?
+  status           ResidentOrderStatus @default(PENDING)
+  totalAmount      Decimal             @db.Decimal(12, 2)
+  currency         String              @default("INR")
+  deliveryAddress  String
+  requestedAt      DateTime            @default(now())
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  resident            Resident             @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  society             Society              @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  communityOrder      CommunityOrder?      @relation(fields: [communityOrderId], references: [id], onDelete: SetNull)
+  items               OrderItem[]
+  payments            Payment[]
+  deliveryAllocations DeliveryAllocation[]
+  residentAllocations ResidentAllocation[]
+
+  @@index([residentId])
+  @@index([societyId])
+  @@index([communityOrderId])
+  @@index([status])
+  @@map("resident_orders")
+}
+
+/// Product and quantity within a resident order
+model OrderItem {
+  id              String   @id @default(uuid())
+  residentOrderId String
+  productId       String
+  quantity        Decimal  @db.Decimal(10, 4)
+  unitPrice       Decimal  @db.Decimal(12, 2)
+  totalPrice      Decimal  @db.Decimal(12, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  residentOrder ResidentOrder @relation(fields: [residentOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([residentOrderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ---------------------------------------------------------
+// COMMUNITY PROCUREMENT
+// ---------------------------------------------------------
+
+/// Consolidated procurement order sent to a supplier for a community
+model CommunityOrder {
+  id               String               @id @default(uuid())
+  idempotencyKey   String?              @unique
+  societyId        String
+  supplierId       String
+  supplierOfferId  String?              @unique
+  status           CommunityOrderStatus @default(CREATED)
+  totalAmount      Decimal              @db.Decimal(12, 2)
+  currency         String               @default("INR")
+  deliveryDeadline DateTime             // Enforces the 12-hour SLA invariant
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  society         Society              @relation(fields: [societyId], references: [id], onDelete: Restrict)
+  supplier        Supplier             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  supplierOffer   SupplierOffer?       @relation("ConfirmedOffer", fields: [supplierOfferId], references: [id], onDelete: SetNull)
+  items           CommunityOrderItem[]
+  residentOrders  ResidentOrder[]
+  delivery        Delivery?
+  offers          SupplierOffer[]      @relation("ProcurementOffers")
+
+  @@index([societyId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([deliveryDeadline])
+  @@map("community_orders")
+}
+
+/// Aggregated product demand in a community order
+model CommunityOrderItem {
+  id                  String   @id @default(uuid())
+  communityOrderId    String
+  productId           String
+  totalQuantity       Decimal  @db.Decimal(10, 4)
+  negotiatedUnitPrice Decimal  @db.Decimal(12, 2)
+  totalPrice          Decimal  @db.Decimal(12, 2)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  communityOrder CommunityOrder @relation(fields: [communityOrderId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([communityOrderId])
+  @@index([productId])
+  @@map("community_order_items")
+}
+
+// ---------------------------------------------------------
+// SUPPLIER OFFERS & NEGOTIATION
+// ---------------------------------------------------------
+
+/// Supplier response/quote for a procurement batch
+model SupplierOffer {
+  id                    String              @id @default(uuid())
+  supplierId            String
+  communityOrderId      String?
+  status                SupplierOfferStatus @default(RECEIVED)
+  totalAmount           Decimal             @db.Decimal(12, 2)
+  currency              String              @default("INR")
+  estimatedDeliveryTime DateTime?
+  reliabilitySnapshot   Decimal?            @db.Decimal(3, 2)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  supplier       Supplier        @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  communityOrder CommunityOrder? @relation("ProcurementOffers", fields: [communityOrderId], references: [id], onDelete: SetNull)
+  confirmedOrder CommunityOrder? @relation("ConfirmedOffer")
+  negotiations   Negotiation[]
+
+  @@index([supplierId])
+  @@index([communityOrderId])
+  @@index([status])
+  @@map("supplier_offers")
+}
+
+/// Negotiation state machine lifecycle associated with a supplier offer
+model Negotiation {
+  id              String            @id @default(uuid())
+  supplierOfferId String
+  status          NegotiationStatus @default(STARTED)
+  startedAt       DateTime          @default(now())
+  completedAt     DateTime?
+  initialAmount   Decimal           @db.Decimal(12, 2)
+  finalAmount     Decimal?          @db.Decimal(12, 2)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  supplierOffer SupplierOffer      @relation(fields: [supplierOfferId], references: [id], onDelete: Cascade)
+  rounds        NegotiationRound[]
+
+  @@index([supplierOfferId])
+  @@index([status])
+  @@map("negotiations")
+}
+
+/// Normalized audit log of an individual negotiation round (no hidden LLM reasoning)
+model NegotiationRound {
+  id               String   @id @default(uuid())
+  negotiationId    String
+  roundNumber      Int
+  offerAmount      Decimal  @db.Decimal(12, 2)
+  supplierResponse String
+  outcome          String
+  timestamp        DateTime @default(now())
+
+  negotiation Negotiation @relation(fields: [negotiationId], references: [id], onDelete: Cascade)
+
+  @@unique([negotiationId, roundNumber])
+  @@index([negotiationId])
+  @@map("negotiation_rounds")
+}
+
+// ---------------------------------------------------------
+// PAYMENT MANDATES & PAYMENTS
+// ---------------------------------------------------------
+
+/// Pre-authorized resident payment boundary for Relay autonomous execution
+model PaymentMandate {
+  id                String               @id @default(uuid())
+  residentId        String
+  status            PaymentMandateStatus @default(ACTIVE)
+  maximumAmount     Decimal              @db.Decimal(12, 2) // Explicit limit boundary
+  currency          String               @default("INR")
+  purpose           String
+  periodStart       DateTime
+  periodEnd         DateTime?
+  providerReference String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  resident Resident  @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([residentId])
+  @@index([status])
+  @@map("payment_mandates")
+}
+
+/// Transaction record associated with an individual resident order
+model Payment {
+  id                String        @id @default(uuid())
+  idempotencyKey    String?       @unique
+  residentOrderId   String
+  paymentMandateId  String
+  amount            Decimal       @db.Decimal(12, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  providerReference String?
+  failureCode       String?
+  authorizedAt      DateTime?
+  completedAt       DateTime?
+  failedAt          DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  residentOrder  ResidentOrder  @relation(fields: [residentOrderId], references: [id], onDelete: Cascade)
+  paymentMandate PaymentMandate @relation(fields: [paymentMandateId], references: [id], onDelete: Restrict)
+
+  @@index([residentOrderId])
+  @@index([paymentMandateId])
+  @@index([status])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------
+// DELIVERY & RECONCILIATION
+// ---------------------------------------------------------
+
+/// Physical fulfillment of a community order
+model Delivery {
+  id               String         @id @default(uuid())
+  communityOrderId String         @unique
+  status           DeliveryStatus @default(PENDING)
+  trackingCode     String?
+  dispatchedAt     DateTime?
+  deliveredAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  communityOrder CommunityOrder       @relation(fields: [communityOrderId], references: [id], onDelete: Cascade)
+  allocations    DeliveryAllocation[]
+
+  @@index([communityOrderId])
+  @@index([status])
+  @@map("deliveries")
+}
+
+/// Maps delivered quantities back to individual resident orders
+model DeliveryAllocation {
+  id              String                   @id @default(uuid())
+  deliveryId      String
+  residentOrderId String
+  productId       String
+  quantity        Decimal                  @db.Decimal(10, 4)
+  status          DeliveryAllocationStatus @default(PENDING)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  delivery      Delivery      @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  residentOrder ResidentOrder @relation(fields: [residentOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([deliveryId])
+  @@index([residentOrderId])
+  @@index([productId])
+  @@map("delivery_allocations")
+}
+
+// ---------------------------------------------------------
+// OPERATIONAL AUDIT SYSTEM
+// ---------------------------------------------------------
+
+/// Generic operational audit event record
+model AuditEvent {
+  id         String         @id @default(uuid())
+  eventType  AuditEventType
+  actor      String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime       @default(now())
+
+  @@index([entityType, entityId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+// ---------------------------------------------------------
+// PHASE 9: RESIDENT ALLOCATION, LEDGER & RECONCILIATION
+// ---------------------------------------------------------
+
+/// Authoritative allocation of verified fulfilled goods/services to an individual resident
+model ResidentAllocation {
+  id                    String               @id @default(uuid())
+  commitmentId          String
+  purchaseOrderId       String?
+  fulfillmentOrderId    String?
+  residentOrderId       String
+  residentReference     String
+  productId             String
+  productName           String
+  requestedQuantity     Decimal              @db.Decimal(10, 4)
+  allocatedQuantity     Decimal              @db.Decimal(10, 4)
+  unit                  String
+  unitPrice             Decimal              @db.Decimal(12, 2)
+  subtotal              Decimal              @db.Decimal(12, 2)
+  allocatedTax          Decimal              @db.Decimal(12, 2)
+  allocatedDeliveryFee  Decimal              @db.Decimal(12, 2)
+  allocatedOtherCharges Decimal              @db.Decimal(12, 2)
+  totalAmount           Decimal              @db.Decimal(12, 2)
+  status                AllocationStatus     @default(PENDING)
+  reconciliationStatus  ReconciliationStatus @default(PENDING)
+  idempotencyKey        String?              @unique
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  residentOrder         ResidentOrder        @relation(fields: [residentOrderId], references: [id], onDelete: Cascade)
+  ledgerEntries         ResidentLedgerEntry[]
+
+  @@index([commitmentId])
+  @@index([residentOrderId])
+  @@index([residentReference])
+  @@index([status])
+  @@map("resident_allocations")
+}
+
+/// Immutable resident accounting ledger record
+model ResidentLedgerEntry {
+  id                String                    @id @default(uuid())
+  residentReference String
+  residentOrderId   String
+  allocationId      String
+  commitmentId      String
+  amount            Decimal                   @db.Decimal(12, 2)
+  currency          String                    @default("INR")
+  entryType         ResidentLedgerEntryType   @default(PROCUREMENT_ALLOCATION)
+  status            ResidentLedgerEntryStatus @default(POSTED)
+  referenceEntryId  String?
+  reason            String?
+  createdAt         DateTime                  @default(now())
+
+  allocation        ResidentAllocation        @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+
+  @@index([residentReference])
+  @@index([residentOrderId])
+  @@index([allocationId])
+  @@index([commitmentId])
+  @@map("resident_ledger_entries")
+}
+
+/// Authoritative reconciliation record linking procurement, fulfillment, and resident accounting
+model ReconciliationRecord {
+  id                             String               @id @default(uuid())
+  commitmentId                   String               @unique
+  status                         ReconciliationStatus @default(PENDING)
+  verifiedFulfilledQuantity      Decimal              @db.Decimal(10, 4)
+  totalAllocatedQuantity         Decimal              @db.Decimal(10, 4)
+  authoritativeProcurementAmount Decimal              @db.Decimal(12, 2)
+  totalAllocatedResidentAmount   Decimal              @db.Decimal(12, 2)
+  isQuantityMatched              Boolean              @default(false)
+  isMonetaryMatched              Boolean              @default(false)
+  isSupplierObligationsMatched   Boolean              @default(false)
+  isPaymentVerified              Boolean              @default(false)
+  reconciledAt                   DateTime?
+  createdAt                      DateTime             @default(now())
+  updatedAt                      DateTime             @updatedAt
+
+  discrepancies                  ReconciliationDiscrepancy[]
+
+  @@index([status])
+  @@map("reconciliation_records")
+}
+
+/// Itemized reconciliation discrepancy discovered during audit
+model ReconciliationDiscrepancy {
+  id                       String                        @id @default(uuid())
+  reconciliationId         String
+  commitmentId             String
+  discrepancyType          ReconciliationDiscrepancyType
+  expectedValue            String
+  actualValue              String
+  difference               Decimal                       @db.Decimal(12, 4)
+  affectedResidentOrderIds String[]
+  reasonCode               String
+  message                  String
+  createdAt                DateTime                      @default(now())
+
+  reconciliation           ReconciliationRecord          @relation(fields: [reconciliationId], references: [id], onDelete: Cascade)
+
+  @@index([reconciliationId])
+  @@index([commitmentId])
+  @@index([discrepancyType])
+  @@map("reconciliation_discrepancies")
+}
+
+// ---------------------------------------------------------
+// PHASE 10: COMPLETE AUTONOMOUS RELAY WORKFLOW
+// ---------------------------------------------------------
+
+/// Authoritative aggregate representing a complete end-to-end procurement workflow
+model RelayWorkflow {
+  id                String         @id @default(uuid())
+  residentReference String
+  societyReference  String
+  requestText       String
+  status            WorkflowStatus @default(RECEIVED)
+  currentStage      WorkflowStage  @default(UNDERSTAND)
+  workflowVersion   Int            @default(1)
+  failureReason     String?
+  startedAt         DateTime       @default(now())
+  completedAt       DateTime?
+  metadata          Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  checkpoints       RelayWorkflowCheckpoint[]
+  events            RelayWorkflowEvent[]
+
+  @@index([residentReference])
+  @@index([status])
+  @@index([currentStage])
+  @@map("relay_workflows")
+}
+
+/// Persistent operational state checkpoint of an active or completed workflow
+model RelayWorkflowCheckpoint {
+  id              String         @id @default(uuid())
+  workflowId      String
+  stage           WorkflowStage
+  status          WorkflowStatus
+  entityIds       Json
+  stateSnapshot   Json?
+  workflowVersion Int
+  timestamp       DateTime       @default(now())
+
+  workflow        RelayWorkflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([stage])
+  @@map("relay_workflow_checkpoints")
+}
+
+/// Audit event stream for a specific workflow
+model RelayWorkflowEvent {
+  id         String        @id @default(uuid())
+  workflowId String
+  eventName  String
+  stage      WorkflowStage
+  payload    Json?
+  timestamp  DateTime      @default(now())
+
+  workflow   RelayWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([eventName])
+  @@map("relay_workflow_events")
+}
+
+/// Durable user session. The database row is the source of truth, so a valid
+/// session survives backend restarts and deployments. Only the SHA-256 hash of
+/// the bearer token is stored — raw tokens are returned once at creation and
+/// never persisted. The provider-identity snapshot lets validation rebuild the
+/// in-memory user registries after a restart via IdentityRehydrationService.
+model UserSession {
+  id                String    @id
+  tokenHash         String    @unique
+  userId            String
+  residentId        String
+  authProvider      String
+  providerAccountId String
+  email             String
+  phone             String?
+  name              String
+  profileImage      String?
+  userAgent         String?
+  ipAddress         String?
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("user_sessions")
+}

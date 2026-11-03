@@ -1,0 +1,455 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, Button, Badge, Container } from '@/components/ui';
+import {
+  ShieldCheck,
+  User,
+  MapPin,
+  Building2,
+  CheckCircle2,
+  CreditCard,
+  ArrowRight,
+  AlertCircle,
+} from 'lucide-react';
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+  const [currentStep, setCurrentStep] = useState<string>('PROFILE_REQUIRED');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form states
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [addressLine, setAddressLine] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('Maharashtra');
+  const [postalCode, setPostalCode] = useState('');
+  const [societySearch, setSocietySearch] = useState('');
+  const [societies, setSocieties] = useState<any[]>([]);
+  const [selectedSocietyId, setSelectedSocietyId] = useState('');
+  const [flatNumber, setFlatNumber] = useState('');
+  const [tower, setTower] = useState('');
+  const [spendingLimit, setSpendingLimit] = useState(5000);
+
+  const getCoordinatesForCity = (cityName: string) => {
+    const norm = (cityName || '').trim().toLowerCase();
+    if (norm.includes('nashik') || norm.includes('nasik')) return { latitude: 20.0112, longitude: 73.7902 };
+    if (norm.includes('pune')) return { latitude: 18.5204, longitude: 73.8567 };
+    if (norm.includes('bangalore') || norm.includes('bengaluru')) return { latitude: 12.9716, longitude: 77.5946 };
+    if (norm.includes('delhi')) return { latitude: 28.6139, longitude: 77.2090 };
+    if (norm.includes('london')) return { latitude: 51.5074, longitude: -0.1278 };
+    if (norm.includes('tokyo')) return { latitude: 35.6762, longitude: 139.6503 };
+    return { latitude: 20.0112, longitude: 73.7902 };
+  };
+
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('relay_session_token') : null;
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
+
+  const fetchStatus = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/status`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentStep(data.data?.currentStep || 'PROFILE_REQUIRED');
+        if (data.data?.isComplete) {
+          router.push('/');
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch onboarding status:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/profile`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ fullName, email: email || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Profile step failed');
+      setCurrentStep(data.data?.currentStep || 'ADDRESS_REQUIRED');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddressSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const coords = getCoordinatesForCity(city);
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/address`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          addressLine,
+          city,
+          state,
+          postalCode,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Address step failed');
+      setCurrentStep(data.data?.currentStep || 'SOCIETY_REQUIRED');
+      searchSocieties();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const searchSocieties = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies/search?query=${encodeURIComponent(societySearch)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSocieties(data.data?.societies || []);
+        if (data.data?.societies?.length > 0) {
+          setSelectedSocietyId(data.data.societies[0].id);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSocietySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      let socId = selectedSocietyId;
+      if (!socId && societies.length === 0) {
+        // Register new society if not found
+        const coords = getCoordinatesForCity(city);
+        const regRes = await fetch(`${API_BASE_URL}/api/societies/register`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            name: societySearch || 'Nashik Heights Residency',
+            address: addressLine || 'Gangapur Road, Anandwalli',
+            city: city || 'Nashik',
+            state: state || 'Maharashtra',
+            postalCode: postalCode || '422013',
+            latitude: coords.latitude || 20.0112,
+            longitude: coords.longitude || 73.7902,
+          }),
+        });
+        const regData = await regRes.json();
+        socId = regData.data?.society?.id || regData.data?.id;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/society`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          societyId: socId,
+          flatNumber,
+          tower,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Society step failed');
+      setCurrentStep(data.data?.currentStep || 'SOCIETY_VERIFICATION_REQUIRED');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerificationSubmit = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/society/verify`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Verification failed');
+      setCurrentStep(data.data?.currentStep || 'PAYMENT_AUTHORIZATION_REQUIRED');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleMandateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/onboarding/payment-mandate`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          spendingLimit: Number(spendingLimit),
+          currency: 'INR',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Payment mandate failed');
+      router.push('/');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-xs text-relay-slate-400">
+        Evaluating onboarding progress...
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-12 sm:py-16 bg-relay-slate-50 min-h-screen">
+      <Container size="sm">
+        <div className="text-center mb-8">
+          <Badge variant="active" size="sm" className="mb-2">
+            Resident Onboarding
+          </Badge>
+          <h1 className="text-2xl font-bold text-relay-slate-900">
+            Welcome to Relay
+          </h1>
+          <p className="text-xs text-relay-slate-500 mt-1">
+            Complete your verified resident profile to join community procurement pools.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-3 rounded-lg bg-red-50 text-red-700 text-xs border border-red-200 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <Card className="p-6 bg-white border-relay-slate-200">
+          {/* Step 1: Profile */}
+          {currentStep === 'PROFILE_REQUIRED' && (
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-relay-slate-900 border-b pb-2">
+                <User className="w-4 h-4 text-teal-600" />
+                <span>Step 1: Resident Profile</span>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Aarav Sharma"
+                  required
+                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                  Email Address (Optional)
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="resident@relay.local"
+                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <Button type="submit" variant="primary" className="w-full" isLoading={submitting}>
+                Save Profile & Continue
+              </Button>
+            </form>
+          )}
+
+          {/* Step 2: Address */}
+          {currentStep === 'ADDRESS_REQUIRED' && (
+            <form onSubmit={handleAddressSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-relay-slate-900 border-b pb-2">
+                <MapPin className="w-4 h-4 text-teal-600" />
+                <span>Step 2: Delivery Address</span>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                  Address Line
+                </label>
+                <input
+                  type="text"
+                  value={addressLine}
+                  onChange={(e) => setAddressLine(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-relay-slate-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-sm border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-relay-slate-700 mb-1">Postal Code</label>
+                  <input
+                    type="text"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 text-sm border rounded-lg"
+                  />
+                </div>
+              </div>
+              <Button type="submit" variant="primary" className="w-full" isLoading={submitting}>
+                Save Address & Continue
+              </Button>
+            </form>
+          )}
+
+          {/* Step 3: Society */}
+          {currentStep === 'SOCIETY_REQUIRED' && (
+            <form onSubmit={handleSocietySubmit} className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-relay-slate-900 border-b pb-2">
+                <Building2 className="w-4 h-4 text-teal-600" />
+                <span>Step 3: Apartment Society</span>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                  Society Name
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={societySearch}
+                    onChange={(e) => setSocietySearch(e.target.value)}
+                    placeholder="Search society..."
+                    className="flex-1 px-3 py-2 text-sm border rounded-lg"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={searchSocieties}>
+                    Search
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-relay-slate-700 mb-1">Tower</label>
+                  <input
+                    type="text"
+                    value={tower}
+                    onChange={(e) => setTower(e.target.value)}
+                    placeholder="Tower B"
+                    className="w-full px-3 py-2 text-sm border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-relay-slate-700 mb-1">Flat / Unit</label>
+                  <input
+                    type="text"
+                    value={flatNumber}
+                    onChange={(e) => setFlatNumber(e.target.value)}
+                    placeholder="402"
+                    required
+                    className="w-full px-3 py-2 text-sm border rounded-lg"
+                  />
+                </div>
+              </div>
+              <Button type="submit" variant="primary" className="w-full" isLoading={submitting}>
+                Select Society & Continue
+              </Button>
+            </form>
+          )}
+
+          {/* Step 4: Society Verification */}
+          {currentStep === 'SOCIETY_VERIFICATION_REQUIRED' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-relay-slate-900 border-b pb-2">
+                <ShieldCheck className="w-4 h-4 text-teal-600" />
+                <span>Step 4: Society Membership Verification</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Verify your community residence to unlock pooled wholesale orders with neighbors.
+              </p>
+              <Button
+                variant="primary"
+                className="w-full"
+                isLoading={submitting}
+                onClick={handleVerificationSubmit}
+              >
+                Verify Society Membership
+              </Button>
+            </div>
+          )}
+
+          {/* Step 5: Payment Authorization */}
+          {currentStep === 'PAYMENT_AUTHORIZATION_REQUIRED' && (
+            <form onSubmit={handleMandateSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-relay-slate-900 border-b pb-2">
+                <CreditCard className="w-4 h-4 text-teal-600" />
+                <span>Step 5: Authorize Spending Mandate</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Set a deterministic spending limit. Relay will never charge more than this authorized amount for pooled orders.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                  Maximum Spending Limit (₹)
+                </label>
+                <input
+                  type="number"
+                  min={100}
+                  max={1000000}
+                  value={spendingLimit}
+                  onChange={(e) => setSpendingLimit(Number(e.target.value))}
+                  required
+                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <Button type="submit" variant="primary" className="w-full" isLoading={submitting}>
+                Authorize Mandate & Complete Onboarding
+              </Button>
+            </form>
+          )}
+        </Card>
+      </Container>
+    </div>
+  );
+}

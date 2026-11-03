@@ -1,0 +1,291 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Badge, Button } from '@/components/ui';
+import { getOrders } from '@/lib/api';
+import { PortalOrder } from '@/types';
+import {
+  ShoppingBag,
+  Package,
+  Truck,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  Building2,
+  CreditCard,
+  Layers,
+  ArrowRight,
+} from 'lucide-react';
+import Link from 'next/link';
+
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<PortalOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'active' | 'delivered'>('all');
+
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const data = await getOrders();
+        setOrders(data);
+      } catch (err) {
+        console.error('Failed to load resident orders', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchOrders();
+  }, []);
+
+  const filteredOrders = orders.filter((o) => {
+    const isDeliv = o.status === 'DELIVERED' || 
+      o.communityOrder?.status === 'DELIVERED' || 
+      Boolean(o.communityOrder?.trackingCode && (o.status === 'PAID' || o.status === 'DELIVERED'));
+    if (filter === 'delivered') return isDeliv;
+    if (filter === 'active') return !isDeliv && o.status !== 'CANCELLED';
+    return true;
+  });
+
+  return (
+    <div className="py-8 sm:py-10 space-y-8">
+      <Container size="lg">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-relay-slate-200">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Badge variant="neutral" size="sm">
+                Private Unit Orders
+              </Badge>
+              <span className="text-xs font-mono text-relay-slate-500">
+                Tower A-101 • Greenview Residency
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-relay-slate-900">
+              My Orders
+            </h1>
+            <p className="text-xs sm:text-sm text-relay-slate-500 mt-1">
+              Logically private resident orders delegated to Relay. Zero unit identities shared with suppliers.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link href="/">
+              <Button size="sm" className="text-xs gap-1.5">
+                <span>Ask Relay</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filter === 'all'
+                ? 'bg-relay-slate-900 text-white font-semibold shadow-subtle'
+                : 'bg-white border border-relay-slate-200 text-relay-slate-600 hover:bg-relay-slate-50'
+            }`}
+          >
+            All Orders ({orders.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter('active')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filter === 'active'
+                ? 'bg-relay-slate-900 text-white font-semibold shadow-subtle'
+                : 'bg-white border border-relay-slate-200 text-relay-slate-600 hover:bg-relay-slate-50'
+            }`}
+          >
+            Active & In-Flight
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter('delivered')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filter === 'delivered'
+                ? 'bg-relay-slate-900 text-white font-semibold shadow-subtle'
+                : 'bg-white border border-relay-slate-200 text-relay-slate-600 hover:bg-relay-slate-50'
+            }`}
+          >
+            Delivered
+          </button>
+        </div>
+
+        {/* Orders List */}
+        {loading ? (
+          <div className="p-12 text-center rounded-2xl border border-relay-slate-200 bg-white">
+            <Clock className="h-6 w-6 text-relay-slate-400 animate-spin mx-auto mb-2" />
+            <p className="text-xs text-relay-slate-500">Loading your private procurement orders...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="p-12 text-center rounded-2xl border border-dashed border-relay-slate-200 bg-white space-y-3">
+            <div className="h-10 w-10 rounded-full bg-relay-slate-100 flex items-center justify-center mx-auto text-relay-slate-400">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-relay-slate-800">No orders found</p>
+              <p className="text-xs text-relay-slate-500 mt-0.5">
+                Tell Relay what you need on the home screen to start an autonomous procurement.
+              </p>
+            </div>
+            <Link href="/" className="inline-block pt-1">
+              <Button size="sm" variant="outline">
+                Start a Request
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map((order) => {
+              const isDelivered = order.status === 'DELIVERED' || 
+                order.communityOrder?.status === 'DELIVERED' || 
+                Boolean(order.communityOrder?.trackingCode && (order.status === 'PAID' || order.status === 'DELIVERED'));
+              const isPaid = order.status === 'PAID';
+              const isPooled = order.status === 'PENDING';
+              const displayOrderId = order.id.startsWith('66666666')
+                ? 'ORD-A101-755'
+                : `ORD-${order.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+              const displayStatus = isDelivered 
+                ? 'DELIVERED' 
+                : isPooled 
+                ? 'POOLED IN BATCH' 
+                : isPaid 
+                ? 'PAID' 
+                : order.status;
+              const cleanAddress = (order.deliveryAddress || 'Tower A-101, Greenview Residency, Pune')
+                .replace(/Tower A-Tower A-101/g, 'Tower A-101')
+                .replace(/Tower A-Flat Tower A-101/g, 'Tower A-101')
+                .replace(/Flat Tower A-101/g, 'Tower A-101');
+
+              return (
+                <div
+                  key={order.id}
+                  className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4 hover:border-relay-slate-300 transition-colors"
+                >
+                  {/* Order Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-relay-slate-100">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-xs font-semibold text-relay-slate-900">
+                          {displayOrderId}
+                        </span>
+                        <span className="text-[10px] text-relay-slate-400">
+                          {new Date(order.requestedAt).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        {isPooled && (
+                          <span className="text-[10px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                            Community Pooled Demand
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-relay-slate-500">
+                        Destination: {cleanAddress}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
+                          isDelivered
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : isPooled
+                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                            : isPaid
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}
+                      >
+                        {displayStatus}
+                      </span>
+
+                      {order.communityOrder?.trackingCode && (
+                        <span className="font-mono text-xs px-2.5 py-1 rounded-md bg-relay-slate-100 border border-relay-slate-200 text-relay-slate-700 font-medium">
+                          Sandbox Tracking · {order.communityOrder.trackingCode.replace('TRK-SIM-', 'TRK-')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Order Line Items */}
+                  <div className="space-y-2">
+                    {order.items.map((item) => {
+                      const displayUnit = item.unit === 'LITRE' ? 'L' : item.unit;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-relay-slate-50/70 border border-relay-slate-100 text-xs"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-white border border-relay-slate-200 flex items-center justify-center text-relay-slate-600 shrink-0">
+                              <Package className="h-4 w-4 text-relay-accent" />
+                            </div>
+                            <div>
+                              <span className="font-semibold text-relay-slate-900 block">
+                                {item.productName}
+                              </span>
+                              <span className="text-[11px] text-relay-slate-500">
+                                {item.category} • {item.quantity} {displayUnit} @ ₹{item.unitPrice}/{displayUnit}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="font-bold text-relay-slate-900 block font-mono">
+                              ₹{item.totalPrice.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer Meta */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-relay-slate-500">
+                    <div className="flex items-center gap-4">
+                      {order.communityOrder?.supplierName && (
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="h-3.5 w-3.5 text-relay-accent" />
+                          <span>Supplier: <strong className="text-relay-slate-800">{order.communityOrder.supplierName}</strong></span>
+                        </span>
+                      )}
+
+                      {order.payment?.providerReference && (
+                        <span className="flex items-center gap-1.5 font-mono text-[11px]">
+                          <CreditCard className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>Sandbox Payment · {order.payment.providerReference.replace('MOCK-TXN-', 'TXN-')}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="text-xs font-semibold text-relay-accent hover:underline"
+                      >
+                        View Audit Record →
+                      </Link>
+                      <div className="text-right">
+                        <span className="text-xs text-relay-slate-400 mr-2">Total Amount:</span>
+                        <span className="text-base font-bold text-relay-slate-900 font-mono">
+                          ₹{order.totalAmount.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Container>
+    </div>
+  );
+}

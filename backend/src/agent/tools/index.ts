@@ -1,0 +1,153 @@
+import { toolRegistry, ToolRegistry, ToolExecutionError } from './registry';
+import { RelayTool, ToolExecutionContext } from './types';
+import {
+  createRequestTool,
+  checkAuthorizationTool,
+  aggregateDemandTool,
+  discoverSuppliersTool,
+  evaluateOffersTool,
+  selectOfferTool,
+  createCommunityOrderTool,
+  allocateResidentOrdersTool,
+  reconcileOrderTool,
+  requestPaymentTool,
+  trackDeliveryTool,
+  createRFQTool,
+  sendRFQTool,
+  getQuotesForRFQTool,
+  getQuoteTool,
+  compareQuotesForRFQTool,
+  getNegotiationStateTool,
+  createNegotiationProposalTool,
+  sendNegotiationProposalTool,
+  evaluateNegotiationResponseTool,
+  compareQuotesForSelectionTool,
+  getSelectionStateTool,
+  recommendSupplierSelectionTool,
+  validateSelectionTool,
+  getProcurementCommitmentTool,
+  getPurchaseOrderTool,
+  requestPaymentForCommitmentTool,
+  getPaymentStateTool,
+  getPaymentAuthorizationStateTool,
+  getProcurementPaymentSummaryTool,
+  createFulfillmentOrderTool,
+  getFulfillmentStateTool,
+  getFulfillmentSummaryTool,
+  getDeliveryStatusTool,
+  getSLAStatusTool,
+  processSupplierFulfillmentEventTool,
+  getResidentAllocationTool,
+  getResidentLedgerTool,
+  getAllocationSummaryTool,
+  getReconciliationStatusTool,
+  explainAllocationTool,
+  startWorkflowTool,
+  getWorkflowStateTool,
+  executeWorkflowStepTool,
+  resumeWorkflowTool,
+  explainWorkflowTool,
+} from './definitions';
+
+// Register all standard Relay tools into the default registry
+toolRegistry.register(createRequestTool);
+toolRegistry.register(checkAuthorizationTool);
+toolRegistry.register(aggregateDemandTool);
+toolRegistry.register(discoverSuppliersTool);
+toolRegistry.register(evaluateOffersTool);
+toolRegistry.register(selectOfferTool);
+toolRegistry.register(createCommunityOrderTool);
+toolRegistry.register(allocateResidentOrdersTool);
+toolRegistry.register(reconcileOrderTool);
+toolRegistry.register(requestPaymentTool);
+toolRegistry.register(trackDeliveryTool);
+toolRegistry.register(createRFQTool);
+toolRegistry.register(sendRFQTool);
+toolRegistry.register(getQuotesForRFQTool);
+toolRegistry.register(getQuoteTool);
+toolRegistry.register(compareQuotesForRFQTool);
+toolRegistry.register(getNegotiationStateTool);
+toolRegistry.register(createNegotiationProposalTool);
+toolRegistry.register(sendNegotiationProposalTool);
+toolRegistry.register(evaluateNegotiationResponseTool);
+toolRegistry.register(compareQuotesForSelectionTool);
+toolRegistry.register(getSelectionStateTool);
+toolRegistry.register(recommendSupplierSelectionTool);
+toolRegistry.register(validateSelectionTool);
+toolRegistry.register(getProcurementCommitmentTool);
+toolRegistry.register(getPurchaseOrderTool);
+toolRegistry.register(requestPaymentForCommitmentTool);
+toolRegistry.register(getPaymentStateTool);
+toolRegistry.register(getPaymentAuthorizationStateTool);
+toolRegistry.register(getProcurementPaymentSummaryTool);
+toolRegistry.register(createFulfillmentOrderTool);
+toolRegistry.register(getFulfillmentStateTool);
+toolRegistry.register(getFulfillmentSummaryTool);
+toolRegistry.register(getDeliveryStatusTool);
+toolRegistry.register(getSLAStatusTool);
+toolRegistry.register(processSupplierFulfillmentEventTool);
+toolRegistry.register(getResidentAllocationTool);
+toolRegistry.register(getResidentLedgerTool);
+toolRegistry.register(getAllocationSummaryTool);
+toolRegistry.register(getReconciliationStatusTool);
+toolRegistry.register(explainAllocationTool);
+toolRegistry.register(startWorkflowTool);
+toolRegistry.register(getWorkflowStateTool);
+toolRegistry.register(executeWorkflowStepTool);
+toolRegistry.register(resumeWorkflowTool);
+toolRegistry.register(explainWorkflowTool);
+
+export {
+  toolRegistry,
+  ToolRegistry,
+  ToolExecutionError,
+  RelayTool,
+  ToolExecutionContext,
+  createRequestTool,
+  checkAuthorizationTool,
+  aggregateDemandTool,
+  discoverSuppliersTool,
+  evaluateOffersTool,
+  selectOfferTool,
+  createCommunityOrderTool,
+  allocateResidentOrdersTool,
+  reconcileOrderTool,
+  requestPaymentTool,
+  trackDeliveryTool,
+  createRFQTool,
+  sendRFQTool,
+  getQuotesForRFQTool,
+  getQuoteTool,
+  compareQuotesForRFQTool,
+  getNegotiationStateTool,
+  createNegotiationProposalTool,
+  sendNegotiationProposalTool,
+  evaluateNegotiationResponseTool,
+  compareQuotesForSelectionTool,
+  getSelectionStateTool,
+  recommendSupplierSelectionTool,
+  validateSelectionTool,
+  getProcurementCommitmentTool,
+  getPurchaseOrderTool,
+  requestPaymentForCommitmentTool,
+  getPaymentStateTool,
+  getPaymentAuthorizationStateTool,
+  getProcurementPaymentSummaryTool,
+  createFulfillmentOrderTool,
+  getFulfillmentStateTool,
+  getFulfillmentSummaryTool,
+  getDeliveryStatusTool,
+  getSLAStatusTool,
+  processSupplierFulfillmentEventTool,
+  getResidentAllocationTool,
+  getResidentLedgerTool,
+  getAllocationSummaryTool,
+  getReconciliationStatusTool,
+  explainAllocationTool,
+  startWorkflowTool,
+  getWorkflowStateTool,
+  executeWorkflowStepTool,
+  resumeWorkflowTool,
+  explainWorkflowTool,
+};
+

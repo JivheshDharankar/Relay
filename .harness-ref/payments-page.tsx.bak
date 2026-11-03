@@ -1,0 +1,239 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Badge, Button } from '@/components/ui';
+import { getPayments } from '@/lib/api';
+import { PaymentSummary } from '@/types';
+import {
+  CreditCard,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  FileText,
+  Lock,
+  ArrowRight,
+  Zap,
+} from 'lucide-react';
+import Link from 'next/link';
+
+export default function PaymentsPage() {
+  const [payments, setPayments] = useState<PaymentSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPayments() {
+      try {
+        const data = await getPayments();
+        setPayments(data);
+      } catch (err) {
+        console.error('Failed to load payment summary', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPayments();
+  }, []);
+
+  const mandate = payments?.mandate;
+  const maxLimit = mandate?.maximumAmount || 8000;
+  const usedAmount = mandate?.usedAmount || 0;
+  const remainingLimit = mandate?.remainingLimit || (maxLimit - usedAmount);
+  const transactions = payments?.transactions || [];
+
+  return (
+    <div className="py-8 sm:py-10 space-y-8">
+      <Container size="lg">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-relay-slate-200">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Badge variant="active" size="sm">
+                Payment Authority
+              </Badge>
+              <span className="text-xs font-mono text-relay-slate-500">
+                Tower A-101 • Pre-Authorized Mandates
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-relay-slate-900">
+              Payments & Mandates
+            </h1>
+            <p className="text-xs sm:text-sm text-relay-slate-500 mt-1">
+              Deterministic spending boundaries. Relay executes autonomously only within your pre-approved cap.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Mandate Active</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Mandate Spending Cap Overview Card */}
+        <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-relay-slate-100">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-relay-accent mb-0.5">
+                <Zap className="h-3.5 w-3.5" />
+                <span>Pre-Authorized Spending Boundary</span>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-relay-slate-900 tracking-tight">
+                Household Procurement Mandate
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs">
+              <span className="px-2.5 py-1 rounded-md bg-relay-slate-100 text-relay-slate-700 font-medium border border-relay-slate-200">
+                Greenview Residency
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+                Auto-Settle Enabled
+              </span>
+            </div>
+          </div>
+
+          {/* Figures */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-1">
+              <span className="text-[11px] font-medium text-relay-slate-500 uppercase tracking-wider block">
+                Total Authorized Limit
+              </span>
+              <span className="text-2xl font-bold text-relay-slate-900 font-mono block">
+                ₹{maxLimit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[11px] text-relay-slate-400">Fixed hard limit per mandate</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-1">
+              <span className="text-[11px] font-medium text-relay-slate-500 uppercase tracking-wider block">
+                Amount Utilized
+              </span>
+              <span className="text-2xl font-bold text-relay-slate-900 font-mono block">
+                ₹{usedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[11px] text-relay-slate-400">Settled autonomous purchases</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100 space-y-1">
+              <span className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider block">
+                Remaining Pre-Authorized
+              </span>
+              <span className="text-2xl font-bold text-emerald-800 font-mono block">
+                ₹{remainingLimit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-[11px] text-emerald-600">Available for next orders</span>
+            </div>
+          </div>
+
+          {/* Visual Progress Bar */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex justify-between text-xs text-relay-slate-500">
+              <span>Mandate Utilization</span>
+              <span className="font-semibold text-relay-slate-800 font-mono">
+                {Math.round((usedAmount / maxLimit) * 100)}% Used
+              </span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-relay-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-relay-accent rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(3, (usedAmount / maxLimit) * 100))}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Invariant Guarantee Banner */}
+          <div className="text-xs text-relay-slate-600 bg-relay-slate-50 p-3.5 rounded-xl border border-relay-slate-200/60 flex items-center gap-2.5">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>
+              <strong>Spending Boundary Protection:</strong> Spending limits are strictly enforced by the backend before payment execution. If an order total exceeds ₹{maxLimit.toLocaleString()}, the transaction is safely rejected without charging your account.
+            </span>
+          </div>
+        </div>
+
+        {/* Payment Transaction History Table */}
+        <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-relay-slate-100">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <FileText className="h-4 w-4 text-relay-accent" />
+                <span>Payment Settlement History</span>
+              </h2>
+              <p className="text-xs text-relay-slate-500">
+                Immutable operational ledger records of pre-authorized payments executed by Relay.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs text-relay-slate-500">
+              <Lock className="h-3.5 w-3.5 text-relay-slate-400" />
+              <span>Zero card credentials stored</span>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="p-8 text-center text-xs text-relay-slate-400">Loading payment ledger...</div>
+          ) : transactions.length === 0 ? (
+            <div className="p-8 text-center text-xs text-relay-slate-500">
+              No transactions recorded yet. When you place a procurement request, execution records appear here.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-relay-slate-200 text-relay-slate-500 font-medium">
+                    <th className="pb-3 font-medium">Reference</th>
+                    <th className="pb-3 font-medium">Description</th>
+                    <th className="pb-3 font-medium">Date & Time</th>
+                    <th className="pb-3 font-medium text-right">Amount</th>
+                    <th className="pb-3 font-medium text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-relay-slate-100">
+                  {transactions.map((txn) => (
+                    <tr key={txn.id} className="hover:bg-relay-slate-50/60 transition-colors">
+                      <td className="py-3.5 font-mono text-relay-slate-800 font-semibold">
+                        {txn.providerReference || txn.id.slice(0, 12)}
+                      </td>
+                      <td className="py-3.5 text-relay-slate-700">
+                        {txn.itemDescription || 'Community Order Settlement'}
+                      </td>
+                      <td className="py-3.5 text-relay-slate-400">
+                        {new Date(txn.executedAt).toLocaleString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="py-3.5 text-right font-mono font-bold text-relay-slate-900">
+                        ₹{txn.amount.toFixed(2)}
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                            txn.status === 'SUCCESS'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          {txn.status === 'SUCCESS' ? (
+                            <CheckCircle2 className="h-3 w-3" />
+                          ) : (
+                            <AlertCircle className="h-3 w-3" />
+                          )}
+                          <span>{txn.status}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </Container>
+    </div>
+  );
+}
+

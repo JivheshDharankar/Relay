@@ -1,0 +1,132 @@
+import { prisma } from '../../config/prisma';
+import {
+  SupplierHardConstraintCheck,
+  calculateDistanceKm,
+  isLessThan,
+  toDecimal,
+} from '../../domain/procurement';
+import { AuditEventType, SupplierStatus, Prisma } from '@prisma/client';
+
+export interface SupplierFilterInput {
+  societyId: string;
+  productId: string;
+  requestedQuantity: Prisma.Decimal | number | string;
+  maxSlaHours?: number; // Defaults to Relay 12-hour SLA invariant
+  overrideDeliveryHours?: Record<string, number>; // Supplier estimated turnaround
+}
+
+export class SupplierService {
+  /**
+   * Deterministically filters suppliers against all operational hard constraints:
+   * 1. Status == ACTIVE
+   * 2. Product carried in catalog and available
+   * 3. Society within supplier's serviceRadiusKm
+   * 4. Fulfillment within 12-hour SLA
+   * 5. Quantity >= MOQ
+   */
+  public async filterEligibleSuppliers(
+    input: SupplierFilterInput
+  ): Promise<SupplierHardConstraintCheck[]> {
+    const maxSlaHours = input.maxSlaHours ?? 12.0;
+    const requestedQty = toDecimal(input.requestedQuantity);
+
+    const society = await prisma.society.findUnique({
+      where: { id: input.societyId },
+    });
+    if (!society) {
+      throw new Error(`Society ${input.societyId} not found`);
+    }
+
+    // Query all suppliers with their product catalog for this product
+    const suppliers = await prisma.supplier.findMany({
+      include: {
+        products: {
+          where: { productId: input.productId },
+        },
+      },
+    });
+
+    const evaluations: SupplierHardConstraintCheck[] = [];
+
+    for (const s of suppliers) {
+      const reasons: string[] = [];
+
+      // 1. Status Check
+      if (s.status !== SupplierStatus.ACTIVE) {
+        reasons.push('SUPPLIER_INACTIVE');
+      }
+
+      // 2. Product Compatibility & Availability Check
+      const supplierProduct = s.products[0];
+      if (!supplierProduct) {
+        reasons.push('PRODUCT_NOT_CARRIED');
+      } else if (!supplierProduct.available) {
+        reasons.push('PRODUCT_UNAVAILABLE');
+      }
+
+      // 3. Geographic Service Area Check (Haversine)
+      const distanceKm = calculateDistanceKm(
+        { latitude: society.latitude, longitude: society.longitude },
+        { latitude: s.latitude, longitude: s.longitude }
+      );
+      const serviceRadiusKm = Number(s.serviceRadiusKm);
+      if (distanceKm > serviceRadiusKm) {
+        reasons.push(`SERVICE_AREA_EXCEEDED (Distance ${distanceKm}km > Radius ${serviceRadiusKm}km)`);
+      }
+
+      // 4. Fulfillment Turnaround SLA Check (12-Hour SLA)
+      // Estimated hours based on supplier characteristics or explicit input
+      const estimatedDeliveryHours =
+        input.overrideDeliveryHours?.[s.id] ??
+        (Number(s.reliabilityScore) >= 0.95 ? 6 : Number(s.reliabilityScore) >= 0.9 ? 8 : 14);
+
+      if (estimatedDeliveryHours > maxSlaHours) {
+        reasons.push(`SLA_VIOLATION (Delivery ${estimatedDeliveryHours}h exceeds 12h SLA limit)`);
+      }
+
+      // 5. MOQ Check
+      const moq = supplierProduct?.moq ?? new Prisma.Decimal(1.0);
+      if (isLessThan(requestedQty, moq)) {
+        reasons.push(`MOQ_NOT_MET (Requested ${requestedQty} < MOQ ${moq})`);
+      }
+
+      evaluations.push({
+        supplierId: s.id,
+        supplierName: s.name,
+        eligible: reasons.length === 0,
+        reasons,
+        distanceKm,
+        serviceRadiusKm,
+        moq,
+        requestedQuantity: requestedQty,
+        estimatedDeliveryHours,
+        maxSlaHours,
+      });
+    }
+
+    // Record audit event
+    await prisma.auditEvent.create({
+      data: {
+        eventType: AuditEventType.SUPPLIERS_DISCOVERED,
+        actor: 'deterministic_core:supplier_service',
+        entityType: 'Society',
+        entityId: input.societyId,
+        metadata: {
+          productId: input.productId,
+          totalSuppliersEvaluated: suppliers.length,
+          eligibleCount: evaluations.filter((e) => e.eligible).length,
+          evaluations: evaluations.map((e) => ({
+            name: e.supplierName,
+            eligible: e.eligible,
+            reasons: e.reasons,
+          })),
+        },
+      },
+    });
+
+    return evaluations;
+  }
+}
+
+export const supplierService = new SupplierService();
+

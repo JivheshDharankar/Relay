@@ -1,0 +1,23 @@
+-- AlterEnum
+ALTER TYPE "AuditEventType" ADD VALUE 'PAYMENT_EXECUTION_STARTED';
+ALTER TYPE "AuditEventType" ADD VALUE 'PAYMENT_EXECUTION_SUCCEEDED';
+ALTER TYPE "AuditEventType" ADD VALUE 'PAYMENT_EXECUTION_FAILED';
+ALTER TYPE "AuditEventType" ADD VALUE 'SUPPLIER_PO_SUBMITTED';
+ALTER TYPE "AuditEventType" ADD VALUE 'SUPPLIER_REJECTED';
+ALTER TYPE "AuditEventType" ADD VALUE 'DELIVERY_INITIALIZED';
+ALTER TYPE "AuditEventType" ADD VALUE 'DELIVERY_PREPARING';
+ALTER TYPE "AuditEventType" ADD VALUE 'DELIVERY_OUT_FOR_DELIVERY';
+
+-- AlterEnum
+ALTER TYPE "DeliveryStatus" ADD VALUE 'OUT_FOR_DELIVERY';
+
+-- AlterTable
+ALTER TABLE "deliveries" ADD COLUMN "trackingCode" TEXT;
+
+-- AlterTable
+ALTER TABLE "payments" ADD COLUMN "failureCode" TEXT,
+ADD COLUMN "idempotencyKey" TEXT;
+
+-- CreateIndex
+CREATE UNIQUE INDEX "payments_idempotencyKey_key" ON "payments"("idempotencyKey");
+

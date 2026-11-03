@@ -1,0 +1,408 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Card, Button, Badge, Container } from '@/components/ui';
+import { ShieldCheck, Mail, Phone, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+
+interface ProviderMetadata {
+  id: string;
+  name: string;
+  type: 'OAUTH' | 'OTP';
+  status: 'CONFIGURED' | 'UNCONFIGURED' | 'ERROR';
+  isAvailable: boolean;
+  requiresConfig: boolean;
+  authorizationUrl?: string;
+  errorMessage?: string;
+}
+
+export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialError = searchParams.get('error');
+
+  const [providers, setProviders] = useState<ProviderMetadata[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(true);
+  const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
+
+  // Email OTP state
+  const [email, setEmail] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  // Phone OTP state
+  const [phone, setPhone] = useState('');
+  const [phoneOtp, setPhoneOtp] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  const [generalError, setGeneralError] = useState<string | null>(initialError);
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+  useEffect(() => {
+    async function fetchProviders() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/providers`);
+        if (res.ok) {
+          const json = await res.json();
+          setProviders(json.data?.providers || []);
+        }
+      } catch (err) {
+        console.error('Failed to load auth providers:', err);
+      } finally {
+        setLoadingProviders(false);
+      }
+    }
+    fetchProviders();
+  }, [API_BASE_URL]);
+
+  const getProvider = (id: string) => providers.find((p) => p.id === id);
+
+  const handleOAuthClick = (providerId: string) => {
+    const p = getProvider(providerId);
+    if (!p || !p.isAvailable) {
+      setGeneralError(`${providerId} authentication is currently unavailable. Configuration required.`);
+      return;
+    }
+    window.location.href = `${API_BASE_URL}/api/auth/${providerId.toLowerCase()}`;
+  };
+
+  const handleRequestEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError(null);
+    setEmailLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/email/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || 'Failed to dispatch email verification code');
+      }
+      setEmailOtpSent(true);
+    } catch (err: any) {
+      setEmailError(err.message);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError(null);
+    setEmailLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/email/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otpCode: emailOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || 'Verification failed');
+      }
+
+      if (typeof window !== 'undefined' && data.data?.session?.token) {
+        localStorage.setItem('relay_session_token', data.data.session.token);
+      }
+
+      const status = data.data?.user?.onboardingStatus;
+      if (status === 'ONBOARDING_COMPLETE') {
+        router.push('/');
+      } else {
+        router.push('/onboarding');
+      }
+    } catch (err: any) {
+      setEmailError(err.message);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleRequestPhoneOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPhoneError(null);
+    setPhoneLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/phone/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || 'Failed to dispatch phone verification code');
+      }
+      setPhoneOtpSent(true);
+    } catch (err: any) {
+      setPhoneError(err.message);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPhoneError(null);
+    setPhoneLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/phone/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otpCode: phoneOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || 'Verification failed');
+      }
+
+      if (typeof window !== 'undefined' && data.data?.session?.token) {
+        localStorage.setItem('relay_session_token', data.data.session.token);
+      }
+
+      const status = data.data?.user?.onboardingStatus;
+      if (status === 'ONBOARDING_COMPLETE') {
+        router.push('/');
+      } else {
+        router.push('/onboarding');
+      }
+    } catch (err: any) {
+      setPhoneError(err.message);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const googleProvider = getProvider('GOOGLE');
+
+  return (
+    <div className="py-12 sm:py-16 bg-relay-slate-50 min-h-screen">
+      <Container size="sm">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold mb-3">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Relay Verified Resident Authentication</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-relay-slate-900 tracking-tight">
+            Sign In to Relay
+          </h1>
+          <p className="text-xs sm:text-sm text-relay-slate-500 mt-1 max-w-sm mx-auto">
+            Access autonomous community procurement, pool demand with neighbors, and track fulfillment.
+          </p>
+        </div>
+
+        {generalError && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold">Authentication Notice</p>
+              <p className="mt-0.5">{generalError}</p>
+            </div>
+          </div>
+        )}
+
+        <Card className="p-6 sm:p-8 space-y-6 bg-white border-relay-slate-200 shadow-sm">
+          {/* OAuth Providers */}
+          <div className="space-y-3">
+            {/* Google */}
+            <div className="flex items-center justify-between p-3 rounded-lg border border-relay-slate-200 bg-white hover:border-relay-slate-300 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-relay-slate-100 flex items-center justify-center font-bold text-xs text-relay-slate-700">
+                  G
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-relay-slate-900">Google</div>
+                  <div className="text-xs text-relay-slate-500">
+                    {googleProvider?.isAvailable ? 'Available' : 'Currently unavailable'}
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant={googleProvider?.isAvailable ? 'primary' : 'outline'}
+                size="sm"
+                disabled={!googleProvider?.isAvailable}
+                onClick={() => handleOAuthClick('GOOGLE')}
+              >
+                Continue with Google
+              </Button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-relay-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase font-medium">
+              <span className="bg-white px-3 text-relay-slate-400">or continue with</span>
+            </div>
+          </div>
+
+          {/* OTP Channel Selector */}
+          <div className="flex border-b border-relay-slate-200 mb-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab('email')}
+              className={`flex-1 pb-2.5 text-xs font-semibold text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+                activeTab === 'email'
+                  ? 'border-teal-600 text-teal-800'
+                  : 'border-transparent text-relay-slate-400 hover:text-relay-slate-600'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>Email Code</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('phone')}
+              className={`flex-1 pb-2.5 text-xs font-semibold text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+                activeTab === 'phone'
+                  ? 'border-teal-600 text-teal-800'
+                  : 'border-transparent text-relay-slate-400 hover:text-relay-slate-600'
+              }`}
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>Phone SMS</span>
+            </button>
+          </div>
+
+          {/* Email Tab */}
+          {activeTab === 'email' && (
+            <div className="space-y-4">
+              {emailError && (
+                <div className="p-3 rounded-md bg-red-50 text-red-700 text-xs border border-red-200">
+                  {emailError}
+                </div>
+              )}
+
+              {!emailOtpSent ? (
+                <form onSubmit={handleRequestEmailOtp} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="resident@yourcommunity.in"
+                      required
+                      className="w-full px-3 py-2 text-sm border border-relay-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    />
+                  </div>
+                  <Button type="submit" variant="primary" className="w-full" isLoading={emailLoading}>
+                    Send Email OTP
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyEmailOtp} className="space-y-3">
+                  <div className="text-xs text-relay-slate-600 bg-teal-50 p-2.5 rounded-lg border border-teal-200 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-teal-700 flex-shrink-0" />
+                    <span>Code dispatched to <strong>{email}</strong></span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                      6-Digit Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={emailOtp}
+                      onChange={(e) => setEmailOtp(e.target.value)}
+                      placeholder="123456"
+                      required
+                      className="w-full px-3 py-2 text-center text-lg font-mono tracking-widest border border-relay-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                  <Button type="submit" variant="primary" className="w-full" isLoading={emailLoading}>
+                    Verify & Continue
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setEmailOtpSent(false)}
+                    className="w-full text-center text-xs text-relay-slate-400 hover:text-relay-slate-600 pt-1"
+                  >
+                    Use different email address
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Phone Tab */}
+          {activeTab === 'phone' && (
+            <div className="space-y-4">
+              {phoneError && (
+                <div className="p-3 rounded-md bg-red-50 text-red-700 text-xs border border-red-200">
+                  {phoneError}
+                </div>
+              )}
+
+              {!phoneOtpSent ? (
+                <form onSubmit={handleRequestPhoneOtp} className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                      Mobile Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      required
+                      className="w-full px-3 py-2 text-sm border border-relay-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    />
+                  </div>
+                  <Button type="submit" variant="primary" className="w-full" isLoading={phoneLoading}>
+                    Send Phone SMS Code
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyPhoneOtp} className="space-y-3">
+                  <div className="text-xs text-relay-slate-600 bg-teal-50 p-2.5 rounded-lg border border-teal-200 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-teal-700 flex-shrink-0" />
+                    <span>Code dispatched to <strong>{phone}</strong></span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-relay-slate-700 mb-1">
+                      6-Digit SMS Code
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={phoneOtp}
+                      onChange={(e) => setPhoneOtp(e.target.value)}
+                      placeholder="123456"
+                      required
+                      className="w-full px-3 py-2 text-center text-lg font-mono tracking-widest border border-relay-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                  <Button type="submit" variant="primary" className="w-full" isLoading={phoneLoading}>
+                    Verify & Continue
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setPhoneOtpSent(false)}
+                    className="w-full text-center text-xs text-relay-slate-400 hover:text-relay-slate-600 pt-1"
+                  >
+                    Use different phone number
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </Card>
+      </Container>
+    </div>
+  );
+}

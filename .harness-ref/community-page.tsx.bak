@@ -1,0 +1,242 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Container, Badge } from '@/components/ui';
+import { getCommunity } from '@/lib/api';
+import { CommunityData } from '@/types';
+import {
+  Building2,
+  ShieldCheck,
+  Layers,
+  Lock,
+  ArrowRight,
+  Clock,
+  Sparkles,
+  CheckCircle2,
+} from 'lucide-react';
+
+export default function CommunityPage() {
+  const [community, setCommunity] = useState<CommunityData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCommunity() {
+      try {
+        const commData = await getCommunity().catch(() => null);
+        if (commData) setCommunity(commData);
+      } catch (err) {
+        console.error('Failed to load community data', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCommunity();
+  }, []);
+
+  return (
+    <div className="py-8 sm:py-10 space-y-8">
+      <Container size="lg">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-relay-slate-200">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Badge variant="active" size="sm">
+                Society Procurement
+              </Badge>
+              <span className="text-xs font-mono text-relay-slate-500">
+                Greenview Residency • Pune
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-relay-slate-900">
+              Community Demand Aggregation
+            </h1>
+            <p className="text-xs sm:text-sm text-relay-slate-500 mt-1">
+              Compatible resident needs aggregated into anonymous procurement batches to unlock wholesale supplier fulfillment.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <span>Zero Resident PII Shared</span>
+            </span>
+          </div>
+        </div>
+
+        {/* The Privacy & Aggregation Architecture Model */}
+        <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+          <div className="pb-3 border-b border-relay-slate-100">
+            <h2 className="text-base sm:text-lg font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+              <Lock className="h-4 w-4 text-emerald-600" />
+              <span>How Relay Aggregates Demand Safely</span>
+            </h2>
+            <p className="text-xs text-relay-slate-500">
+              Individual resident orders remain private. Suppliers only receive an anonymous consolidated batch.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2">
+            <div className="p-4 rounded-xl bg-relay-slate-50 border border-relay-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-relay-slate-900">
+                <span>1. Private Orders</span>
+                <span className="text-[10px] font-mono text-relay-slate-400">Step 1</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Residents independently submit natural-language requests from their units.
+              </p>
+              <div className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Confidential to unit</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-relay-slate-50 border border-relay-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-relay-slate-900">
+                <span>2. Compatibility Check</span>
+                <span className="text-[10px] font-mono text-relay-slate-400">Step 2</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Relay identifies matching SKUs, deadlines, and delivery windows across the society.
+              </p>
+              <div className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Deterministic matching</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-relay-slate-50 border border-relay-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-relay-slate-900">
+                <span>3. Anonymous Batch</span>
+                <span className="text-[10px] font-mono text-relay-slate-400">Step 3</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Demand is consolidated into a single bulk PO without resident names or flat numbers.
+              </p>
+              <div className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Zero resident PII</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-relay-slate-50 border border-relay-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-relay-slate-900">
+                <span>4. Local Fulfillment</span>
+                <span className="text-[10px] font-mono text-relay-slate-400">Step 4</span>
+              </div>
+              <p className="text-xs text-relay-slate-600">
+                Supplier delivers bulk order to society gate within 12h SLA; Relay reconciles individual units.
+              </p>
+              <div className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 pt-1">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>12h SLA enforced</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Demand Pooling Section */}
+        <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-relay-slate-100">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+                <Layers className="h-4 w-4 text-relay-accent" />
+                <span>Active Demand Aggregation Pools</span>
+              </h2>
+              <p className="text-xs text-relay-slate-500">
+                Compatible resident demands pooled together automatically within Greenview Residency.
+              </p>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Society Demand Pools</span>
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="p-8 text-center text-xs text-relay-slate-400">Loading demand pools...</div>
+          ) : community && community.activeDemandPools.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {community.activeDemandPools.map((pool, i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-relay-slate-900">{pool.productName}</h3>
+                      <span className="text-xs text-relay-slate-500">
+                        Pooled from {pool.contributingOrdersCount} residential units
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-base font-bold text-relay-slate-900 font-mono block">
+                        {pool.totalQuantity} {pool.unit}
+                      </span>
+                      <span className="text-[10px] text-relay-slate-600 font-medium bg-relay-slate-200/80 px-2 py-0.5 rounded border border-relay-slate-300">
+                        Compatible Demand Ready
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Privacy note */}
+                  <div className="flex items-center gap-1.5 text-[11px] text-relay-slate-500 pt-2 border-t border-relay-slate-200/60">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>Resident orders remain private. Supplier only receives this bulk total.</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-relay-slate-500 py-4 text-center">
+              No active demand pools right now. When residents request compatible goods, Relay pools them automatically.
+            </p>
+          )}
+        </div>
+
+        {/* Operational Guardrails */}
+        <div className="bg-white rounded-2xl border border-relay-slate-200/90 shadow-subtle p-5 sm:p-6 space-y-4">
+          <div className="pb-3 border-b border-relay-slate-100">
+            <h2 className="text-base sm:text-lg font-bold text-relay-slate-900 tracking-tight flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-relay-accent" />
+              <span>Society Procurement Guardrails</span>
+            </h2>
+            <p className="text-xs text-relay-slate-500">
+              Deterministic boundaries governing all procurement in Greenview Residency.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="p-3.5 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-1">
+              <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                12-Hour SLA Constraint
+              </span>
+              <p className="text-relay-slate-700">
+                Only local suppliers with guaranteed fulfillment &le; 12 hours are eligible.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-1">
+              <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                Local Service Radius
+              </span>
+              <p className="text-relay-slate-700">
+                Suppliers must have Greenview Residency within their verified delivery zone.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-relay-slate-50/70 border border-relay-slate-200 space-y-1">
+              <span className="text-[11px] font-medium text-relay-slate-400 uppercase tracking-wider block">
+                Pre-Approved Mandates
+              </span>
+              <p className="text-relay-slate-700">
+                Residents are charged autonomously only within their verified household spending limits.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+}

@@ -1,0 +1,49 @@
+{
+  "browser": {
+    "chromeOpenedOnce": "YES",
+    "chromeRemainedOpenContinuously": "YES",
+    "anyBrowserRestart": "NO"
+  },
+  "workflow": {
+    "step0_starting_state": "PASS",
+    "request_submission": "PASS",
+    "autonomous_execution": "PASS",
+    "supplier_evaluation": "PASS",
+    "supplier_selection": "PASS",
+    "payment": "PASS",
+    "fulfillment": "PASS",
+    "delivery": "PASS",
+    "reconciliation": "PASS"
+  },
+  "consistency": {
+    "orderIdConsistent": "YES",
+    "paymentReferenceConsistent": "YES",
+    "trackingReferenceConsistent": "YES",
+    "supplierConsistent": "YES",
+    "amountConsistent": "YES",
+    "quantityConsistent": "YES"
+  },
+  "responsive": {
+    "desktop": "PASS",
+    "mobile": "FAIL"
+  },
+  "evidence": {
+    "screenshots": [
+      "00-start.png",
+      "01-request-entered.png",
+      "02-working.png",
+      "03-suppliers.png",
+      "04-selected-offer.png",
+      "05-payment.png",
+      "06-fulfillment.png",
+      "07-delivered.png",
+      "08-reconciled.png",
+      "09-orders.png",
+      "10-payments.png",
+      "11-community.png",
+      "12-settings.png",
+      "13-mobile-complete.png"
+    ],
+    "directory": "/Users/jivhesh/Desktop/Relay/evidence/continuous-run"
+  }
+}
