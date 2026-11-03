@@ -46,6 +46,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = useCallback(async () => {
     if (!hasSessionToken()) {
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('oauthGrant')) {
+        return;
+      }
       setSession(null);
       setError(null);
       setStatus('anonymous');

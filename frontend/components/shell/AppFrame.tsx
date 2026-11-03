@@ -139,11 +139,14 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
   const isOnboardingRoute = pathname === '/onboarding';
   const isLoggedOutHome = isHome && sessionStatus !== 'authenticated';
   const guarded = !isPublicRoute && !isHome;
+  const hasOAuthGrant =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('oauthGrant');
 
   React.useEffect(() => {
-    if (!guarded || sessionStatus !== 'anonymous') return;
+    if (!guarded || sessionStatus !== 'anonymous' || hasOAuthGrant) return;
     router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [guarded, sessionStatus, pathname, router]);
+  }, [guarded, sessionStatus, pathname, router, hasOAuthGrant]);
 
   // Onboarding activation boundary: signed-in residents who have not
   // finished onboarding stay inside the activation flow. Only redirect once
@@ -163,14 +166,14 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
   if (isPublicRoute || isLoggedOutHome) {
     return <PublicFrame>{children}</PublicFrame>;
   }
-  if (guarded && sessionStatus !== 'authenticated') {
+  if (guarded && (sessionStatus !== 'authenticated' || hasOAuthGrant)) {
     // Private route without a verified session: neutral splash inside the
     // public frame — never the shell, never the page content. The effect
     // above redirects once anonymity is confirmed (not while resolving).
     return (
       <PublicFrame>
         <GuardSplash
-          message={sessionStatus === 'loading' ? 'Checking your session…' : 'Redirecting to sign-in…'}
+          message={sessionStatus === 'loading' || hasOAuthGrant ? 'Checking your session…' : 'Redirecting to sign-in…'}
           error={sessionStatus === 'loading' ? sessionError : null}
           onRetry={() => void refreshSession()}
         />

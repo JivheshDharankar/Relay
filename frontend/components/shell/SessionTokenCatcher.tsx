@@ -1,9 +1,34 @@
 'use client';
 
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { exchangeOAuthGrant, setSessionToken } from '@/lib/api';
 import { useSession } from '@/lib/session/SessionContext';
+
+/**
+ * Removes the `oauthGrant` search parameter synchronously from the current
+ * browser URL via history.replaceState, preserving pathname, hash, and other params.
+ */
+export function stripOAuthGrantParam(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('oauthGrant')) {
+      url.searchParams.delete('oauthGrant');
+      const clean = `${url.pathname}${url.search ? url.search : ''}${url.hash || ''}`;
+      window.history.replaceState(null, '', clean);
+      return clean;
+    }
+    return `${url.pathname}${url.search ? url.search : ''}${url.hash || ''}`;
+  } catch {
+    return window.location.pathname;
+  }
+}
+
+/**
+ * Module-level in-flight deduplication set across Strict Mode and concurrent mounts.
+ */
+const inFlightGrants = new Set<string>();
 
 /**
  * Captures the backend's OAuth redirect (`?oauthGrant=...`), exchanges the
@@ -15,15 +40,17 @@ function Catcher() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { refresh } = useSession();
+  const inFlightRef = useRef<string | null>(null);
 
   useEffect(() => {
     const grant = searchParams.get('oauthGrant');
-    if (!grant) return;
-    let cancelled = false;
+    if (!grant || inFlightRef.current === grant || inFlightGrants.has(grant)) return;
+    inFlightRef.current = grant;
+    inFlightGrants.add(grant);
+
     (async () => {
       try {
         const info = await exchangeOAuthGrant(grant);
-        if (cancelled) return;
         if (info.session.token) {
           setSessionToken(info.session.token);
         }
@@ -31,17 +58,15 @@ function Catcher() {
         // Invalid/expired/consumed grant: fall through to the normal
         // unauthenticated experience rather than trapping the user.
       } finally {
-        if (cancelled) return;
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('oauthGrant');
-        const clean = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
-        router.replace(clean);
+        inFlightGrants.delete(grant);
+        // Synchronously strip the grant param from the browser URL BEFORE
+        // triggering refresh() so that a failed exchange immediately transitions
+        // to 'anonymous' rather than hanging in 'loading'.
+        const clean = stripOAuthGrantParam();
+        router.replace(clean || window.location.pathname);
         void refresh();
       }
     })();
-    return () => {
-      cancelled = true;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
