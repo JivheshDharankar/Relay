@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { prisma } from '../config/prisma';
 import { SEED_IDS } from '../config/seedConstants';
+import { getCatalogReferencePrice } from '../config/pricingCatalog';
 import { matchCatalogProduct } from '../agent/intent/catalogMatcher';
 import { roundMoney } from '../domain/procurement/decimal';
 import { failureClassificationService } from '../resilience/FailureClassificationService';
@@ -381,7 +382,7 @@ export class WorkflowExecutor {
       // marked simulated — no live supplier participated.
       const simSeed = `${workflow.id}|${cand.id}`;
       const simLines = workflowLineItems.map((li) => {
-        const linePrice = this.computeDynamicPrice(li.productName, i, simSeed);
+        const linePrice = this.computeDynamicPrice(li.productName, i, simSeed, li.productId);
         return {
           ...(li.identitySource ? { identitySource: li.identitySource } : {}),
           productName: li.productName,
@@ -1347,27 +1348,43 @@ export class WorkflowExecutor {
   }
 
   /**
-   * Generates dynamic base price for unseen products based on product name character codes.
-   * With a run seed (workflow + supplier identity), fresh runs produce
-   * different but plausible prices; without a seed the legacy values hold.
+   * Generates dynamic price for products based on authoritative catalog benchmark.
+   * Applies small, deterministic supplier-specific variance (±3% to ±8%)
+   * based on hash(supplier + product) so different suppliers give different quotes
+   * while strictly remaining in the realistic market range.
    */
   private computeDynamicPrice(
     productName: string,
     supplierOffset: number,
-    runSeed = ''
+    runSeed = '',
+    productId?: string
   ): number {
-    const input = runSeed === '' ? productName : `${runSeed}|${productName}|${supplierOffset}`;
-    const base = 40 + (this.hashSeeded(input) % 450);
-    return roundMoney(base * (1 + supplierOffset * 0.04)).toNumber();
+    const ref = getCatalogReferencePrice(productName, productId);
+    const input =
+      runSeed === ''
+        ? `${productName}|${supplierOffset}`
+        : `${runSeed}|${productName}|${supplierOffset}`;
+    const hash = this.hashSeeded(input);
+
+    const span = ref.maxPrice - ref.minPrice;
+    if (span <= 0) return ref.basePrice;
+
+    // Small supplier-specific variance (±3% to ±8%)
+    const offsetEffect = ((supplierOffset % 3) - 1) * (span * 0.15);
+    const variance = hash % (span + 1);
+    const rawPrice = ref.minPrice + variance + offsetEffect;
+    const clampedPrice = Math.min(ref.maxPrice, Math.max(ref.minPrice, rawPrice));
+
+    return roundMoney(clampedPrice).toNumber();
   }
 
   /**
-   * Simulated delivery fee (INR 40-120). Seeded per run; legacy index
+   * Simulated delivery fee (INR 40-50). Seeded per run; legacy index
    * formula preserved when no seed is supplied.
    */
   private computeDynamicFee(supplierOffset: number, runSeed = ''): number {
-    if (runSeed === '') return roundMoney(40 + supplierOffset * 15).toNumber();
-    return roundMoney(40 + (this.hashSeeded(`${runSeed}|fee|${supplierOffset}`) % 81)).toNumber();
+    if (runSeed === '') return roundMoney(40 + supplierOffset * 5).toNumber();
+    return roundMoney(40 + (this.hashSeeded(`${runSeed}|fee|${supplierOffset}`) % 11)).toNumber();
   }
 
   /**
