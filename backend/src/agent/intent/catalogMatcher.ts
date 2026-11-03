@@ -143,6 +143,12 @@ export const INTENT_CATALOG: CatalogEntry[] = [
     keywords: ['maida', 'refined flour', 'refined wheat flour'],
     unit: ProductUnit.KG,
   },
+  {
+    productId: SEED_IDS.products.maggi,
+    canonicalName: 'maggi',
+    keywords: ['maggi', 'instant noodles', 'noodles', 'maggi noodles'],
+    unit: ProductUnit.PACK,
+  },
 ];
 
 function cleanName(name: string): string {
