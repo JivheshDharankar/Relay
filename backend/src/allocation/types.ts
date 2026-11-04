@@ -164,6 +164,19 @@ export interface ReconciliationDiscrepancy {
 }
 
 /**
+ * Per-line item breakdown for deterministic reconciliation.
+ */
+export interface LineReconciliationBreakdown {
+  productId: string;
+  productName: string;
+  unit: string;
+  requestedQuantity: number;
+  allocatedQuantity: number;
+  verifiedFulfilledQuantity: number;
+  isMatched: boolean;
+}
+
+/**
  * Complete outcome of a deterministic reconciliation execution.
  */
 export interface ReconciliationResult {
@@ -178,6 +191,8 @@ export interface ReconciliationResult {
   isMonetaryMatched: boolean;
   isSupplierObligationsMatched: boolean;
   isPaymentVerified: boolean;
+  lineItems?: LineReconciliationBreakdown[];
+  reason?: string;
   discrepancies: ReconciliationDiscrepancy[];
   reconciledAt?: Date;
   createdAt: Date;

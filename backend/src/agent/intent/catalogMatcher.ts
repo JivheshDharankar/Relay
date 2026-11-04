@@ -44,28 +44,28 @@ export const INTENT_CATALOG: CatalogEntry[] = [
   {
     productId: SEED_IDS.products.rice,
     canonicalName: 'rice',
-    keywords: ['rice', 'basmati', 'chawal'],
+    keywords: ['rice', 'basmati', 'chawal', 'चावल', 'तांदूळ', 'tandul'],
     unit: ProductUnit.KG,
     matchExclusions: ['atta', 'flour'],
   },
   {
     productId: SEED_IDS.products.wheat,
     canonicalName: 'wheat',
-    keywords: ['wheat', 'atta', 'flour', 'sharbati'],
+    keywords: ['wheat', 'atta', 'flour', 'sharbati', 'गेहूं', 'गहू', 'gehu', 'gahu'],
     unit: ProductUnit.KG,
     // The wheat SKU is whole wheat atta: refined flour is maida, never this SKU.
     matchExclusions: ['refined'],
     formAliases: [
       {
         canonicalName: 'wheat flour',
-        keywords: ['wheat flour', 'whole wheat flour', 'whole wheat atta', 'atta'],
+        keywords: ['wheat flour', 'whole wheat flour', 'whole wheat atta', 'atta', 'गव्हाचे पीठ', 'गेहूं का आटा'],
       },
     ],
   },
   {
     productId: SEED_IDS.products.cookingOil,
     canonicalName: 'cooking oil',
-    keywords: ['cooking oil', 'sunflower oil', 'sunflower', 'oil'],
+    keywords: ['cooking oil', 'sunflower oil', 'sunflower', 'oil', 'तेल', 'tel'],
     unit: ProductUnit.LITRE,
     // The cooking-oil SKU is sunflower oil: other seed oils fall through to
     // open-world instead of this mismatched SKU.
@@ -74,7 +74,7 @@ export const INTENT_CATALOG: CatalogEntry[] = [
   {
     productId: SEED_IDS.products.detergent,
     canonicalName: 'detergent',
-    keywords: ['detergent', 'washing powder', 'laundry'],
+    keywords: ['detergent', 'washing powder', 'laundry', 'डिटर्जेंट'],
     unit: ProductUnit.KG,
   },
   {
@@ -86,7 +86,7 @@ export const INTENT_CATALOG: CatalogEntry[] = [
   {
     productId: SEED_IDS.products.sugar,
     canonicalName: 'sugar',
-    keywords: ['sugar', 'cheeni', 'sakhar'],
+    keywords: ['sugar', 'cheeni', 'sakhar', 'चीनी', 'साखर'],
     unit: ProductUnit.KG,
     // "Sugar free" products are not the sugar SKU.
     matchExclusions: ['free'],
@@ -94,7 +94,7 @@ export const INTENT_CATALOG: CatalogEntry[] = [
   {
     productId: SEED_IDS.products.groundnut,
     canonicalName: 'groundnut',
-    keywords: ['groundnut', 'peanut', 'peanuts', 'moongphali', 'shengdana'],
+    keywords: ['groundnut', 'peanut', 'peanuts', 'moongphali', 'shengdana', 'shengdane', 'मूंगफली', 'शेंगदाणे'],
     unit: ProductUnit.KG,
     // The groundnut SKU is raw groundnuts: peanut oil is a different
     // product (butter/chikki forms are covered by the shared guard).
@@ -103,59 +103,66 @@ export const INTENT_CATALOG: CatalogEntry[] = [
   {
     productId: SEED_IDS.products.toothbrushes,
     canonicalName: 'toothbrush',
-    keywords: ['toothbrush', 'toothbrushes', 'tooth brush', 'brush'],
+    keywords: ['toothbrush', 'toothbrushes', 'tooth brush', 'brush', 'टूथब्रश'],
     unit: ProductUnit.UNIT,
   },
   {
     productId: SEED_IDS.products.bananas,
     canonicalName: 'banana',
-    keywords: ['banana', 'bananas', 'kela'],
+    keywords: ['banana', 'bananas', 'kela', 'kele', 'केला', 'केले', 'केळी'],
     unit: ProductUnit.UNIT,
   },
   {
     productId: SEED_IDS.products.oranges,
     canonicalName: 'orange',
-    keywords: ['orange', 'oranges', 'santra'],
+    keywords: ['orange', 'oranges', 'santra', 'santre', 'संतरा', 'संत्री'],
     unit: ProductUnit.UNIT,
   },
   {
     productId: SEED_IDS.products.apple,
     canonicalName: 'apple',
-    keywords: ['apple', 'apples', 'seb'],
+    keywords: ['apple', 'apples', 'seb', 'सेब', 'safarchand', 'सफरचंद'],
     unit: ProductUnit.KG,
   },
   {
     productId: SEED_IDS.products.bajra,
     canonicalName: 'bajra',
-    keywords: ['bajra', 'pearl millet'],
+    keywords: ['bajra', 'pearl millet', 'बाजरा', 'बाजरी'],
     unit: ProductUnit.KG,
     matchExclusions: ['atta', 'flour'],
   },
   {
     productId: SEED_IDS.products.darkChocolate,
     canonicalName: 'dark chocolate',
-    keywords: ['dark chocolate', 'chocolate', 'cocoa bar'],
+    keywords: ['dark chocolate', 'chocolate', 'cocoa bar', 'चॉकलेट'],
     unit: ProductUnit.KG,
   },
   {
     productId: SEED_IDS.products.maida,
     canonicalName: 'maida',
-    keywords: ['maida', 'refined flour', 'refined wheat flour'],
+    keywords: ['maida', 'refined flour', 'refined wheat flour', 'मैदा'],
     unit: ProductUnit.KG,
+  },
+  {
+    productId: SEED_IDS.products.maggi,
+    canonicalName: 'maggi',
+    keywords: ['maggi', 'instant noodles', 'noodles', 'maggi noodles', 'मॅगी', 'मैगी'],
+    unit: ProductUnit.PACK,
   },
 ];
 
 function cleanName(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function matchesKeyword(cleaned: string, keyword: string): boolean {
   if (cleaned === keyword) return true;
-  return new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(cleaned);
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^|[^\\p{L}\\p{M}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{M}\\p{N}])`, 'u').test(cleaned);
 }
 
 export interface CatalogMatch {

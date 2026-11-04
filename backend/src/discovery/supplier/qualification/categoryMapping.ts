@@ -42,6 +42,14 @@ const COMMON_INCOMPATIBLE_TOKENS = [
   'gas_station',
   'fitness',
   'gym',
+  'university',
+  'college',
+  'school',
+  'institute',
+  'department',
+  'hostel',
+  'kpop',
+  'fan_store',
 ];
 
 /**

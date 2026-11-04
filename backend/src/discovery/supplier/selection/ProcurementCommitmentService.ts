@@ -214,6 +214,7 @@ export class ProcurementCommitmentService {
             productName: primaryLine?.productName || 'Procured product',
             unit: primaryLine?.unit || 'units',
           },
+          lineItems: rfq.lineItems,
           requestedQuantity,
           committedQuantity: requestedQuantity,
           allocations: allocationPlan.allocations,
@@ -255,6 +256,7 @@ export class ProcurementCommitmentService {
           rfq,
           {
             supplierContacts: input.supplierContacts,
+            quotes: quoteMap,
           }
         );
 

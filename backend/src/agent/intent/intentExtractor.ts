@@ -19,6 +19,12 @@ import {
 } from './intentSchema';
 import { matchCatalogProduct } from './catalogMatcher';
 import { findPriceSpans, splitQuantitySegments } from './quantitySegments';
+import {
+  detectAmbiguousQuantityPhrasing,
+  detectContradictoryDeliveryPhrasing,
+  normalizeDevanagariNumerals,
+  normalizeIndicNumberWords,
+} from './multilingual';
 
 export type IntentStatus = 'ok' | 'unresolved' | 'invalid' | 'error';
 
@@ -124,6 +130,25 @@ const BARE_REFERENCE_NAMES = new Set([
   'these',
   'that stuff',
   'this stuff',
+  'around',
+  'approx',
+  'maybe',
+  'chahiye',
+  'pahije',
+  'हवे आहेत',
+  'हवा आहे',
+  'हवी आहे',
+  'चाहिए',
+  'मुझे',
+  'हमें',
+  'मला',
+  'आम्हाला',
+  'नहीं',
+  'नाही',
+  'नको',
+  'nahi',
+  'nahin',
+  'nako',
 ]);
 
 /**
@@ -291,7 +316,38 @@ export class IntentExtractor {
         ],
       };
     }
-    if (detectIdentityOverrideInstruction(userRequest)) {
+    let normalizedRequest = normalizeDevanagariNumerals(userRequest);
+    normalizedRequest = normalizeIndicNumberWords(normalizedRequest);
+
+    if (detectAmbiguousQuantityPhrasing(normalizedRequest)) {
+      return {
+        status: 'unresolved',
+        issues: [
+          {
+            code: 'AMBIGUOUS_QUANTITY',
+            message:
+              'Request contains approximate or conditional quantities. ' +
+              'Please specify the exact fixed quantity you want procured.',
+          },
+        ],
+      };
+    }
+
+    if (detectContradictoryDeliveryPhrasing(normalizedRequest)) {
+      return {
+        status: 'unresolved',
+        issues: [
+          {
+            code: 'CONTRADICTORY_SCHEDULE',
+            message:
+              'Request contains conflicting delivery schedule requirements. ' +
+              'Please clarify whether you require urgent immediate delivery or a later scheduled date.',
+          },
+        ],
+      };
+    }
+
+    if (detectIdentityOverrideInstruction(normalizedRequest)) {
       return {
         status: 'invalid',
         issues: [
@@ -304,7 +360,7 @@ export class IntentExtractor {
         ],
       };
     }
-    if (detectNegativeQuantity(userRequest)) {
+    if (detectNegativeQuantity(normalizedRequest)) {
       // Pre-model tripwire: negative quantities are never procurable, and a
       // model that silently drops the minus sign would fabricate a quantity.
       // Reject deterministically before any model call.
@@ -326,7 +382,7 @@ export class IntentExtractor {
       response = await this.provider.generateWithTools({
         messages: [
           { role: 'system', content: INTENT_EXTRACTION_SYSTEM_PROMPT },
-          { role: 'user', content: userRequest },
+          { role: 'user', content: normalizedRequest },
         ],
         tools: [EXTRACT_INTENT_TOOL],
         temperature: 0.1,

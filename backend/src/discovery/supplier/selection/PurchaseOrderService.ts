@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { eventBus } from '../../../events';
+import { Quote } from '../quote/types';
 import { RFQ } from '../rfq/types';
 import {
   ProcurementCommitment,
@@ -22,6 +23,7 @@ export class PurchaseOrderService {
     options?: {
       supplierContacts?: Map<string, string>;
       idempotencyKey?: string;
+      quotes?: Map<string, Quote>;
     }
   ): Promise<PurchaseOrder[]> {
     const dedupeKey = options?.idempotencyKey || `po_gen_${commitment.id}`;
@@ -40,16 +42,40 @@ export class PurchaseOrderService {
         options?.supplierContacts?.get(alloc.supplierId) ||
         (alloc.supplierId === rfq.candidateId ? rfq.recipientContact : 'procurement@supplier.com');
 
-      const lines: PurchaseOrderLine[] = [
-        {
-          lineNumber: 1,
-          productName: commitment.product.productName,
-          quantity: alloc.allocatedQuantity,
-          unit: alloc.unit,
-          unitPrice: alloc.agreedUnitPrice,
-          lineTotal: alloc.lineSubtotal,
-        },
-      ];
+      let lines: PurchaseOrderLine[];
+      if (rfq.lineItems && rfq.lineItems.length > 1) {
+        const quote = options?.quotes?.get(alloc.quoteId);
+        lines = rfq.lineItems.map((rfqLine, index) => {
+          const qLine = quote?.lineItems.find(
+            (ql) =>
+              (ql.productId && rfqLine.productId && ql.productId === rfqLine.productId) ||
+              ql.productName.toLowerCase() === rfqLine.productName.toLowerCase() ||
+              ql.productName.toLowerCase().includes(rfqLine.productName.toLowerCase()) ||
+              rfqLine.productName.toLowerCase().includes(ql.productName.toLowerCase())
+          );
+          const unitPrice = qLine?.unitPrice ?? alloc.agreedUnitPrice;
+          const lineTotal = Math.round(rfqLine.quantity * unitPrice * 100) / 100;
+          return {
+            lineNumber: index + 1,
+            productName: rfqLine.productName,
+            quantity: rfqLine.quantity,
+            unit: rfqLine.unit,
+            unitPrice,
+            lineTotal,
+          };
+        });
+      } else {
+        lines = [
+          {
+            lineNumber: 1,
+            productName: commitment.product.productName,
+            quantity: alloc.allocatedQuantity,
+            unit: alloc.unit,
+            unitPrice: alloc.agreedUnitPrice,
+            lineTotal: alloc.lineSubtotal,
+          },
+        ];
+      }
 
       const po: PurchaseOrder = {
         id: poId,

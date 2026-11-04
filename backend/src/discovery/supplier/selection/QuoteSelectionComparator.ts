@@ -45,9 +45,37 @@ export class QuoteSelectionComparator {
       const primaryLine = quote.lineItems[0];
       const unitPrice = primaryLine?.unitPrice ?? 0;
       const offeredQuantity = quote.lineItems.reduce((acc, li) => acc + li.quotedQuantity, 0);
-      const isPartial = quote.status === 'PARTIAL' || offeredQuantity < requestedQuantity;
+
+      // Per-line demand integrity check
+      const uncoveredItems: string[] = [];
+      let allLinesSatisfied = true;
+      if (rfq.lineItems && rfq.lineItems.length > 1) {
+        for (const rfqLine of rfq.lineItems) {
+          const qLine = quote.lineItems.find(
+            (ql) =>
+              (ql.productId && rfqLine.productId && ql.productId === rfqLine.productId) ||
+              ql.productName.toLowerCase() === rfqLine.productName.toLowerCase() ||
+              ql.productName.toLowerCase().includes(rfqLine.productName.toLowerCase()) ||
+              rfqLine.productName.toLowerCase().includes(ql.productName.toLowerCase())
+          );
+          if (!qLine) {
+            allLinesSatisfied = false;
+            uncoveredItems.push(`${rfqLine.quantity} ${rfqLine.unit} ${rfqLine.productName} (missing)`);
+          } else if (qLine.quotedQuantity < rfqLine.quantity) {
+            allLinesSatisfied = false;
+            uncoveredItems.push(
+              `${rfqLine.productName} (offered ${qLine.quotedQuantity}/${rfqLine.quantity} ${rfqLine.unit})`
+            );
+          }
+        }
+      }
+
+      const isPartial =
+        quote.status === 'PARTIAL' ||
+        (rfq.lineItems && rfq.lineItems.length > 1 ? !allLinesSatisfied : offeredQuantity < requestedQuantity);
       const moq = options?.moqMap?.get(quote.candidateId) ?? 1;
-      const moqSatisfied = offeredQuantity >= moq;
+      const moqSatisfied =
+        offeredQuantity >= moq && (rfq.lineItems && rfq.lineItems.length > 1 ? allLinesSatisfied : true);
 
       const slaMarginHours = eligibility?.remainingSlaHours ?? 0;
       const isSlaCompliant = slaMarginHours > 0;
@@ -72,6 +100,7 @@ export class QuoteSelectionComparator {
         isPartial,
         moq,
         moqSatisfied,
+        uncoveredItems: uncoveredItems.length > 0 ? uncoveredItems : undefined,
         negotiatedSavings,
         supplierDistanceKm: distance,
         isEligible,
@@ -127,6 +156,7 @@ export class QuoteSelectionComparator {
       rfqId: rfq.id,
       requestedQuantity,
       unit,
+      lineItems: rfq.lineItems,
       quotes: quoteMetrics,
       eligibleQuotes,
       lowestCostQuoteId,

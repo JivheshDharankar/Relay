@@ -5,6 +5,8 @@ import {
   multiplyDecimals,
   roundMoney,
   toDecimal,
+  toDecimalOptional,
+  toNonNegativeDecimal,
 } from '../../../domain/procurement/decimal';
 import { Quote } from '../quote/types';
 import { ProposedAllocation, SupplierAllocation } from './types';
@@ -45,7 +47,16 @@ export class AllocationService {
         throw new Error(`Quote '${proposed.quoteId}' not found during allocation calculation`);
       }
 
+      if (proposed.quantity <= 0) {
+        throw new Error(
+          `Proposed allocation quantity must be positive, got ${proposed.quantity} for supplier '${proposed.supplierId}'`
+        );
+      }
+
       const lines = Array.isArray(quote.lineItems) ? quote.lineItems : [];
+      if (lines.length === 0) {
+        throw new Error(`Quote '${proposed.quoteId}' has no line items for allocation`);
+      }
       const primaryLine = quote.lineItems[0];
       const unit = primaryLine?.unit ?? 'units';
 
@@ -57,17 +68,49 @@ export class AllocationService {
       let lineSubtotalDecimal;
       let unitPrice: number;
       if (lines.length <= 1) {
-        unitPrice = primaryLine?.unitPrice ?? 0;
+        if (
+          primaryLine.unitPrice === undefined ||
+          primaryLine.unitPrice === null ||
+          isNaN(primaryLine.unitPrice)
+        ) {
+          throw new Error(`Quote '${proposed.quoteId}' line item is missing required unitPrice`);
+        }
+        if (primaryLine.unitPrice < 0) {
+          throw new Error(
+            `Quote '${proposed.quoteId}' line item has negative unitPrice: ${primaryLine.unitPrice}`
+          );
+        }
+        unitPrice = primaryLine.unitPrice;
         lineSubtotalDecimal = roundMoney(multiplyDecimals(proposed.quantity, unitPrice));
       } else {
         const totalQuotedQty = lines.reduce((acc, l) => acc + (l.quotedQuantity ?? 0), 0);
-        const factor =
-          totalQuotedQty > 0 ? divideDecimals(proposed.quantity, totalQuotedQty) : toDecimal(0);
+        if (totalQuotedQty <= 0) {
+          throw new Error(
+            `Quote '${proposed.quoteId}' total quoted quantity must be positive, got ${totalQuotedQty}`
+          );
+        }
+        const factor = divideDecimals(proposed.quantity, totalQuotedQty);
         let extendedSum = toDecimal(0);
         for (const line of lines) {
-          const lineExtended = roundMoney(
-            multiplyDecimals(line.quotedQuantity ?? 0, line.unitPrice ?? 0)
-          );
+          if (
+            line.unitPrice === undefined ||
+            line.unitPrice === null ||
+            isNaN(line.unitPrice)
+          ) {
+            throw new Error(`Quote '${proposed.quoteId}' line item is missing required unitPrice`);
+          }
+          if (line.unitPrice < 0) {
+            throw new Error(
+              `Quote '${proposed.quoteId}' line item has negative unitPrice: ${line.unitPrice}`
+            );
+          }
+          const lineQty = toDecimal(line.quotedQuantity ?? 0);
+          if (lineQty.isNegative()) {
+            throw new Error(
+              `Quote '${proposed.quoteId}' line item has negative quotedQuantity: ${line.quotedQuantity}`
+            );
+          }
+          const lineExtended = roundMoney(multiplyDecimals(lineQty, line.unitPrice));
           extendedSum = addDecimals(extendedSum, multiplyDecimals(lineExtended, factor));
         }
         lineSubtotalDecimal = roundMoney(extendedSum);
@@ -81,10 +124,16 @@ export class AllocationService {
       }
 
       // 2. Delivery fee & charges for this supplier allocation
-      // If split order, each supplier charges their quoted delivery fee and tax
-      const deliveryFeeDecimal = roundMoney(toDecimal(quote.deliveryFee));
-      const taxDecimal = roundMoney(toDecimal(quote.tax));
-      const otherChargesDecimal = roundMoney(toDecimal(quote.otherCharges));
+      // Optional fees default to 0 if omitted, but negative values and invalid strings are strictly rejected
+      const deliveryFeeDecimal = roundMoney(
+        toNonNegativeDecimal(toDecimalOptional(quote.deliveryFee, 0), 'Delivery fee')
+      );
+      const taxDecimal = roundMoney(
+        toNonNegativeDecimal(toDecimalOptional(quote.tax, 0), 'Tax')
+      );
+      const otherChargesDecimal = roundMoney(
+        toNonNegativeDecimal(toDecimalOptional(quote.otherCharges, 0), 'Other charges')
+      );
 
       // 3. Allocation total = lineSubtotal + deliveryFee + tax + otherCharges
       const allocationTotalDecimal = roundMoney(

@@ -88,11 +88,21 @@ export class SelectionAIAdvisor {
         };
       }
 
+      let reason: string;
+      if (comparison.lineItems && comparison.lineItems.length > 1) {
+        const itemsDesc = comparison.lineItems
+          .map((li) => `${li.quantity} ${li.unit} ${li.productName}`)
+          .join(', ');
+        reason = `Supplier '${best.supplierName}' covers all ${comparison.lineItems.length} items (${itemsDesc}) at the lowest eligible total cost of ₹${best.total.toFixed(2)} with compliant SLA margin of ${best.slaMarginHours}h.${provenanceNote(best)}`;
+      } else {
+        reason = `Supplier '${best.supplierName}' satisfies 100% of demand (${requestedQuantity} ${comparison.unit}) at the lowest eligible total cost of ₹${best.total.toFixed(2)} with compliant SLA margin of ${best.slaMarginHours}h.${provenanceNote(best)}`;
+      }
+
       return {
         decision: 'SELECT_SUPPLIER',
         supplierId: best.candidateId,
         quoteId: best.quoteId,
-        reason: `Supplier '${best.supplierName}' satisfies 100% of demand (${requestedQuantity} ${comparison.unit}) at the lowest eligible total cost of ₹${best.total.toFixed(2)} with compliant SLA margin of ${best.slaMarginHours}h.${provenanceNote(best)}`,
+        reason,
         expectedBenefit: {
           costSaving: best.negotiatedSavings,
           deliveryHours: best.deliveryEtaHours,

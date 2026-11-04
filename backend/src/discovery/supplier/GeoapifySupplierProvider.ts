@@ -16,7 +16,6 @@ import {
  */
 const DEFAULT_COMMERCIAL_CATEGORIES = [
   'commercial.supermarket',
-  'commercial.food_and_drink',
   'commercial.marketplace',
   'commercial.convenience',
 ];
@@ -298,6 +297,21 @@ export class GeoapifySupplierProvider implements SupplierDiscoveryProvider {
         Number.isNaN(placeLon)
       ) {
         // Skip feature without valid coordinates
+        continue;
+      }
+
+      const cats = Array.isArray(props.categories) ? props.categories : [];
+      // Filter out non-grocery hospitality establishments (restaurants, cafes, bars)
+      if (
+        cats.some(
+          (c) =>
+            typeof c === 'string' &&
+            (c.startsWith('catering.restaurant') ||
+              c.startsWith('catering.cafe') ||
+              c.startsWith('catering.bar') ||
+              c.startsWith('catering.fast_food'))
+        )
+      ) {
         continue;
       }
 

@@ -12,6 +12,33 @@ import {
 } from './types';
 
 /**
+ * Keywords in supplier business names that clearly indicate non-grocery / ineligible establishments.
+ */
+const NON_GROCERY_NAME_KEYWORDS = [
+  'department of',
+  'university',
+  'college',
+  'school',
+  'institute',
+  'coep',
+  'hostel',
+  'kpop',
+  'fan store',
+  'cafe',
+  'café',
+  'restaurant',
+  'bar',
+  'hotel',
+  'hospital',
+  'pharmacy',
+  'bank',
+  'atm',
+  'gym',
+  'cinema',
+  'theatre',
+];
+
+/**
  * Deterministic qualification service for local supplier candidates.
  * Acts as an immutable safety and eligibility boundary before any AI evaluation or RFQ dispatch.
  */
@@ -26,6 +53,17 @@ export class DeterministicQualificationService {
     const reasons: QualificationReasonCode[] = [];
     const rejectionReasons: QualificationReasonCode[] = [];
     const matchedCategories: string[] = [];
+
+    // =========================================================================
+    // 0. NON-GROCERY ESTABLISHMENT FILTER
+    // =========================================================================
+    const lowerName = (candidate.name || '').toLowerCase();
+    for (const kw of NON_GROCERY_NAME_KEYWORDS) {
+      if (lowerName.includes(kw)) {
+        rejectionReasons.push('CATEGORY_MISMATCH');
+        break;
+      }
+    }
 
     // =========================================================================
     // 1. BUSINESS INFORMATION QUALITY CHECK

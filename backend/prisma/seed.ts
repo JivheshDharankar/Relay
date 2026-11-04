@@ -39,6 +39,7 @@ export const SEED_IDS = {
     darkChocolate: '44444444-4444-4444-8444-444444444413',
     maida: '44444444-4444-4444-8444-444444444414',
     ambemoharRice: '44444444-4444-4444-8444-444444444415',
+    maggi: '44444444-4444-4444-8444-444444444416',
   },
   mandates: {
     aarav: '55555555-5555-4555-8555-555555555501',
@@ -303,6 +304,13 @@ export async function seed(client: PrismaClient = prisma) {
       unit: ProductUnit.KG,
       sku: 'RICE-AMBEMOHAR-001',
     },
+    {
+      id: SEED_IDS.products.maggi,
+      name: 'Instant Noodles (Maggi 2-Pack)',
+      category: 'Grains & Staples',
+      unit: ProductUnit.PACK,
+      sku: 'NOODLE-MAGGI-001',
+    },
   ];
 
   for (const p of productsData) {
@@ -420,6 +428,7 @@ export async function seed(client: PrismaClient = prisma) {
     { supplierId: SEED_IDS.suppliers.sahyadri, productId: SEED_IDS.products.cookingOil, basePrice: 165.0, moq: 2.0 },
     { supplierId: SEED_IDS.suppliers.sahyadri, productId: SEED_IDS.products.sugar, basePrice: 42.0, moq: 1.0 },
     { supplierId: SEED_IDS.suppliers.sahyadri, productId: SEED_IDS.products.groundnut, basePrice: 120.0, moq: 1.0 },
+    { supplierId: SEED_IDS.suppliers.sahyadri, productId: SEED_IDS.products.maggi, basePrice: 13.5, moq: 1.0 },
 
     // Deccan Swift: Full catalog, low MOQ, slight speed premium
     { supplierId: SEED_IDS.suppliers.deccan, productId: SEED_IDS.products.rice, basePrice: 90.0, moq: 1.0 },
@@ -430,6 +439,7 @@ export async function seed(client: PrismaClient = prisma) {
     { supplierId: SEED_IDS.suppliers.deccan, productId: SEED_IDS.products.sugar, basePrice: 44.0, moq: 1.0 },
     { supplierId: SEED_IDS.suppliers.deccan, productId: SEED_IDS.products.groundnut, basePrice: 125.0, moq: 1.0 },
     { supplierId: SEED_IDS.suppliers.deccan, productId: SEED_IDS.products.toothbrushes, basePrice: 65.0, moq: 1.0 },
+    { supplierId: SEED_IDS.suppliers.deccan, productId: SEED_IDS.products.maggi, basePrice: 14.0, moq: 1.0 },
 
     // Pune Bulk: Wholesale high-MOQ staples
     { supplierId: SEED_IDS.suppliers.puneBulk, productId: SEED_IDS.products.rice, basePrice: 78.0, moq: 25.0 },
@@ -438,6 +448,7 @@ export async function seed(client: PrismaClient = prisma) {
     { supplierId: SEED_IDS.suppliers.puneBulk, productId: SEED_IDS.products.sugar, basePrice: 40.0, moq: 2.0 },
     { supplierId: SEED_IDS.suppliers.puneBulk, productId: SEED_IDS.products.groundnut, basePrice: 115.0, moq: 2.0 },
     { supplierId: SEED_IDS.suppliers.puneBulk, productId: SEED_IDS.products.toothbrushes, basePrice: 58.0, moq: 2.0 },
+    { supplierId: SEED_IDS.suppliers.puneBulk, productId: SEED_IDS.products.maggi, basePrice: 12.0, moq: 5.0 },
   ];
 
   for (const sp of supplierProductsData) {
