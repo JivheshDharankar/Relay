@@ -3,10 +3,28 @@
  */
 
 /**
- * Normalizes Devanagari numerals (०-९) to ASCII digits (0-9).
+ * Normalizes Unicode text:
+ * 1. Converts to standard Unicode NFC form (unifying decomposed combining diacritics/matras).
+ * 2. Strips invisible zero-width characters (\u200B zero-width space, \u200C ZWNJ, \u200D ZWJ, \uFEFF BOM).
+ * 3. Normalizes Indic punctuation (Devanagari danda \u0964 and double danda \u0965) to standard delimiters.
+ * 4. Normalizes typographic quotes to standard ASCII quotes.
+ */
+export function normalizeIndicUnicode(text: string): string {
+  if (!text) return '';
+  return text
+    .normalize('NFC')
+    .replace(/[\u200B-\u200D\uFEFF]/gu, '')
+    .replace(/[।॥]/gu, ' , ')
+    .replace(/[\u2018\u2019]/gu, "'")
+    .replace(/[\u201C\u201D]/gu, '"');
+}
+
+/**
+ * Normalizes Devanagari numerals (०-९) to ASCII digits (0-9) after Unicode cleaning.
  */
 export function normalizeDevanagariNumerals(text: string): string {
-  return text.replace(/[०-९]/g, (d) => String(d.charCodeAt(0) - 0x0966));
+  const cleaned = normalizeIndicUnicode(text);
+  return cleaned.replace(/[०-९]/g, (d) => String(d.charCodeAt(0) - 0x0966));
 }
 
 /**
@@ -18,14 +36,19 @@ const INDIC_NUMBER_WORDS: [RegExp, string][] = [
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:तीनशे|तीन सौ|three hundred)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 300 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:चारशे|चार सौ|four hundred)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 400 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:पाचशे|पांच सौ|five hundred)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 500 '],
+  [/(?:^|[^\p{L}\p{M}\p{N}])(?:हजार|thousand)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 1000 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:पन्नास|पचास|fifty)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 50 '],
+  [/(?:^|[^\p{L}\p{M}\p{N}])(?:चाळीस|चालीस|forty)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 40 '],
+  [/(?:^|[^\p{L}\p{M}\p{N}])(?:तीस|thirty)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 30 '],
+  [/(?:^|[^\p{L}\p{M}\p{N}])(?:पंचवीस|पच्चीस|twenty[\s-]?five)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 25 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:वीस|बीस|twenty)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 20 '],
+  [/(?:^|[^\p{L}\p{M}\p{N}])(?:पंधरा|पंद्रह|fifteen)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 15 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:दहा|दस|ten)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 10 '],
   [/(?:^|[^\p{L}\p{M}\p{N}])(?:पाच|पांच|five)(?=$|[^\p{L}\p{M}\p{N}])/gui, ' 5 '],
 ];
 
 export function normalizeIndicNumberWords(text: string): string {
-  let result = text;
+  let result = normalizeIndicUnicode(text);
   for (const [pattern, replacement] of INDIC_NUMBER_WORDS) {
     result = result.replace(pattern, replacement);
   }

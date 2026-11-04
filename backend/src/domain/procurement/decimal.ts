@@ -1,16 +1,20 @@
 import { Prisma } from '@prisma/client';
 
-export type DecimalLike = Prisma.Decimal | number | string | undefined | null;
+export type DecimalLike = Prisma.Decimal | number | string;
 
 /**
- * Coerces a numeric value or string safely into a Prisma.Decimal.
- * Treats undefined or null as 0. Never allows NaN or infinite values.
+ * Coerces a required numeric value or string safely into a Prisma.Decimal.
+ * STRICTLY REJECTS undefined, null, empty strings, NaN, and invalid numeric representations.
+ * Never silently defaults missing financial values to 0.
  */
-export function toDecimal(val?: DecimalLike | null): Prisma.Decimal {
+export function toDecimal(val: DecimalLike): Prisma.Decimal {
   if (val === undefined || val === null) {
-    return new Prisma.Decimal(0);
+    throw new Error('Cannot convert undefined or null to Decimal: required financial value is missing');
   }
   if (val instanceof Prisma.Decimal) {
+    if (val.isNaN()) {
+      throw new Error('Invalid numeric value for Decimal: NaN');
+    }
     return val;
   }
   if (typeof val === 'number') {
@@ -19,7 +23,61 @@ export function toDecimal(val?: DecimalLike | null): Prisma.Decimal {
     }
     return new Prisma.Decimal(val.toString());
   }
-  return new Prisma.Decimal(val);
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed.length === 0) {
+      throw new Error('Cannot convert empty string to Decimal: required financial value is missing');
+    }
+    try {
+      const d = new Prisma.Decimal(trimmed);
+      if (d.isNaN()) {
+        throw new Error(`Invalid numeric string for Decimal: "${val}"`);
+      }
+      return d;
+    } catch {
+      throw new Error(`Invalid numeric string for Decimal: "${val}"`);
+    }
+  }
+  throw new Error(`Unsupported value type for Decimal: ${typeof val}`);
+}
+
+/**
+ * Coerces an explicitly optional financial value to a Prisma.Decimal.
+ * Only use for business fields where absence explicitly denotes zero (e.g. optional discounts or non-assessed delivery fees).
+ * Still strictly validates that if a value is present, it is a valid non-empty numeric representation.
+ */
+export function toDecimalOptional(
+  val?: DecimalLike | null,
+  defaultValue: DecimalLike = 0
+): Prisma.Decimal {
+  if (val === undefined || val === null) {
+    return toDecimal(defaultValue);
+  }
+  return toDecimal(val);
+}
+
+/**
+ * Validates that an amount is non-negative (>= 0).
+ * Throws if negative or invalid.
+ */
+export function toNonNegativeDecimal(val: DecimalLike, fieldName = 'Amount'): Prisma.Decimal {
+  const d = toDecimal(val);
+  if (d.isNegative()) {
+    throw new Error(`${fieldName} cannot be negative: ${d.toString()}`);
+  }
+  return d;
+}
+
+/**
+ * Validates that an amount is strictly positive (> 0).
+ * Throws if zero, negative, or invalid.
+ */
+export function toPositiveDecimal(val: DecimalLike, fieldName = 'Amount'): Prisma.Decimal {
+  const d = toDecimal(val);
+  if (!d.greaterThan(0)) {
+    throw new Error(`${fieldName} must be strictly positive: ${d.toString()}`);
+  }
+  return d;
 }
 
 /**

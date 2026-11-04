@@ -131,6 +131,64 @@ describe('RELAY — RED TEAM, ADVERSARIAL TESTING & SECURITY HARDENING', () => {
       expect(result.status).toBe('unresolved');
       expect(result.issues.some((i) => i.code === 'CONTRADICTORY_SCHEDULE')).toBe(true);
     });
+
+    it('Group D1: Handles zero-width characters (ZWSP, ZWNJ, ZWJ) without corruption', async () => {
+      // Injected \u200B (zero-width space) and \u200C (ZWNJ) inside numeral and product name
+      const promptWithZeroWidth = 'सोसायटीसाठी १००\u200B किलो ता\u200Cंदूळ हवे आहेत.';
+      const result = await extractor.extract(promptWithZeroWidth);
+      expect(result.status).toBe('ok');
+      expect(result.intent!.items.length).toBe(1);
+      const item = result.intent!.items[0];
+      expect(item.quantity).toBe(100);
+      expect(item.unit).toBe(ProductUnit.KG);
+      if (item.resolution.status === 'resolved') {
+        expect(item.resolution.productId).toBe(SEED_IDS.products.rice);
+      }
+    });
+
+    it('Group D2: Handles Unicode NFD decomposed characters via canonical NFC normalization', async () => {
+      // Decomposed combining marks (e.g. i + \u0301 in "basmati\u0301") are canonically normalized to NFC
+      const decomposed = '100 kg basmati\u0301 rice';
+      expect(decomposed.normalize('NFD')).not.toBe(decomposed.normalize('NFC'));
+
+      const result = await extractor.extract(decomposed);
+      expect(result.status).toBe('ok');
+      const item = result.intent!.items[0];
+      expect(item.quantity).toBe(100);
+      expect(item.unit).toBe(ProductUnit.KG);
+      if (item.resolution.status === 'resolved') {
+        expect(item.resolution.productId).toBe(SEED_IDS.products.rice);
+      }
+    });
+
+    it('Group D3: Handles Devanagari danda (।) and double danda (॥) punctuation delimiters', async () => {
+      const dandaPrompt = '१०० किलो तांदूळ । ५० किलो साखर ॥';
+      const result = await extractor.extract(dandaPrompt);
+      expect(result.status).toBe('ok');
+      expect(result.intent!.items.length).toBe(2);
+
+      const rice = result.intent!.items.find((i) => i.quantity === 100);
+      const sugar = result.intent!.items.find((i) => i.quantity === 50);
+
+      expect(rice).toBeDefined();
+      expect(rice?.unit).toBe(ProductUnit.KG);
+      expect(sugar).toBeDefined();
+      expect(sugar?.unit).toBe(ProductUnit.KG);
+    });
+
+    it('Group D4: Multi-item mixed-language Hinglish/Hindi prompt decomposes cleanly', async () => {
+      const mixedPrompt = 'Society ke liye 100 kg chawal aur 50 kg cheeni chahiye.';
+      const result = await extractor.extract(mixedPrompt);
+      expect(result.status).toBe('ok');
+      expect(result.intent!.items.length).toBe(2);
+
+      const item1 = result.intent!.items[0];
+      const item2 = result.intent!.items[1];
+      expect(item1.quantity).toBe(100);
+      expect(item1.unit).toBe(ProductUnit.KG);
+      expect(item2.quantity).toBe(50);
+      expect(item2.unit).toBe(ProductUnit.KG);
+    });
   });
 
   // =========================================================================
@@ -360,7 +418,13 @@ describe('RELAY — RED TEAM, ADVERSARIAL TESTING & SECURITY HARDENING', () => {
           receivedAt: new Date(),
           validUntil: new Date(Date.now() + 86400000),
         } as any,
-        { maxRounds: 3, targetDiscountPercent: 10 } as any,
+        {
+          maxRounds: 3,
+          minPriceImprovementPercent: 1,
+          minPriceImprovementAbsolute: 1,
+          minDeliveryHoursImprovement: 1,
+          maxDiscountPercent: 35,
+        },
         competitorNames
       );
 

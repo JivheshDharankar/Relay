@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "WorkflowStatus" ADD VALUE IF NOT EXISTS 'DRAFT' BEFORE 'RECEIVED';
+

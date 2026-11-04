@@ -4,7 +4,7 @@ import {
   isLessThan,
   isPositive,
   subtractDecimals,
-  toDecimal,
+  toDecimalOptional,
 } from '../../../domain/procurement/decimal';
 import { Quote } from '../quote/types';
 import { RFQ } from '../rfq/types';
@@ -86,12 +86,12 @@ export class DeterministicNegotiationValidator {
       if (isLessThan(changes.targetUnitPrice, 0)) {
         errors.push('NEGATIVE_TARGET_PRICE: Target unit price cannot be negative');
       } else {
-        const currentUnitPrice = quote.lineItems[0]?.unitPrice ?? toDecimal(0);
+        const currentUnitPrice = toDecimalOptional(quote.lineItems[0]?.unitPrice, 0);
         if (isGreaterThan(changes.targetUnitPrice, currentUnitPrice)) {
           errors.push('TARGET_PRICE_EXCEEDS_CURRENT: Target unit price cannot be higher than quoted price');
         } else {
           const priceDiff = subtractDecimals(currentUnitPrice, changes.targetUnitPrice);
-          const minAbsolute = toDecimal(policy.minPriceImprovementAbsolute);
+          const minAbsolute = toDecimalOptional(policy.minPriceImprovementAbsolute, 0);
           const percentReduction = isPositive(currentUnitPrice)
             ? priceDiff.dividedBy(currentUnitPrice).times(100).toNumber()
             : 0;
