@@ -70,7 +70,7 @@ export default function SuppliersPage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by name or city…"
-                  className="w-full sm:w-72 rounded-md border border-relay-surface-border bg-white px-3.5 py-2.5 text-sm text-relay-ink-900 placeholder:text-relay-ink-400 outline-none focus:border-relay-primary-500 focus:ring-2 focus:ring-relay-primary-500/20 min-h-[42px]"
+                  className="w-full sm:w-72 rounded-md border border-relay-surface-border bg-[#12161D] px-3.5 py-2.5 text-sm text-relay-ink-900 placeholder:text-relay-ink-400 outline-none focus:border-relay-primary-500 focus:ring-2 focus:ring-relay-primary-500/20 min-h-[42px]"
                 />
                 <span className="text-xs font-mono text-relay-ink-500">
                   {filteredSuppliers.length} of {suppliers.length}
@@ -89,7 +89,7 @@ export default function SuppliersPage() {
                     <Card className="px-5 py-5 group-hover:border-relay-primary-500/50 group-hover:shadow-raised transition-all h-full">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 min-w-0">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-relay-navy-900 text-white shrink-0">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-relay-navy-900 text-white shrink-0">
                             <Store className="h-5 w-5" aria-hidden />
                           </span>
                           <div className="min-w-0">

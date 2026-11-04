@@ -88,7 +88,7 @@ export function FailureExperienceCard({
 
   return (
     <div
-      className="rounded-lg border border-relay-danger-100 bg-white text-relay-ink-900 shadow-card overflow-hidden"
+      className="rounded-2xl border border-relay-danger-100 bg-[#12161D] text-relay-ink-900 shadow-none overflow-hidden"
       role="alert"
       aria-live="assertive"
     >
@@ -128,7 +128,7 @@ export function FailureExperienceCard({
         </div>
 
         {/* User Request Quote */}
-        <div className="rounded-lg border border-relay-surface-border bg-relay-surface-sunken/60 p-4">
+        <div className="rounded-2xl border border-relay-surface-border bg-relay-surface-sunken/60 p-4">
           <p className="text-xs font-medium text-relay-ink-500 mb-1">
             Original Resident Request
           </p>
@@ -145,7 +145,7 @@ export function FailureExperienceCard({
               : 'Relay could not map this request to a supported procurement product.'}
           </p>
           {errorDetail && (
-            <p className="text-xs font-mono text-relay-ink-500 bg-relay-surface-sunken p-2.5 rounded-lg border border-relay-surface-border">
+            <p className="text-xs font-mono text-relay-ink-500 bg-relay-surface-sunken p-2.5 rounded-2xl border border-relay-surface-border">
               {errorDetail}
             </p>
           )}
@@ -153,7 +153,7 @@ export function FailureExperienceCard({
 
         {/* No-substitution assurance (never names products: no hardcoded list) */}
         {clarification && (
-          <div className="rounded-lg border border-relay-surface-border bg-relay-surface-sunken/60 p-4 space-y-3">
+          <div className="rounded-2xl border border-relay-surface-border bg-relay-surface-sunken/60 p-4 space-y-3">
             <p className="text-xs text-relay-ink-500">
               Relay never substitutes a different product or guesses missing details — nothing was ordered, and no payment was made.
             </p>
@@ -177,7 +177,7 @@ export function FailureExperienceCard({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-relay-surface-border bg-white px-4 py-3 text-sm text-relay-ink-900 font-mono focus:outline-none focus:ring-2 focus:ring-relay-primary-600/40"
+              className="w-full rounded-2xl border border-relay-surface-border bg-[#12161D] px-4 py-3 text-sm text-relay-ink-900 font-mono focus:outline-none focus:ring-2 focus:ring-relay-primary-600/40"
             />
             <div className="flex flex-wrap items-center justify-between gap-4">
               <Button

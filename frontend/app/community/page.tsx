@@ -14,7 +14,7 @@ import { formatPercent, formatQuantity } from '@/lib/format';
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-3.5">
+    <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-3.5">
       <p className="text-xs text-relay-ink-500">{label}</p>
       <p className="font-mono text-lg font-semibold text-relay-ink-900 tnum mt-1">{value}</p>
     </div>
@@ -116,7 +116,7 @@ export default function CommunityPage() {
                 ) : (
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {community.activeDemandPools.slice(0, 4).map((pool) => (
-                      <li key={pool.productId} className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-4">
+                      <li key={pool.productId} className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-4">
                         <h3 className="text-sm font-semibold text-relay-ink-900 tracking-tight">{pool.productName}</h3>
                         <p className="font-mono text-xl font-semibold tnum mt-1">{formatQuantity(pool.totalQuantity, pool.unit)}</p>
                         <p className="text-xs text-relay-ink-600 mt-1 tnum">

@@ -64,7 +64,7 @@ export function ProcurementProofDisplay({
 
   return (
     <section
-      className={`rounded-lg border border-relay-surface-border bg-white shadow-card overflow-hidden ${className}`}
+      className={`rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none overflow-hidden ${className}`}
       role="region"
       aria-label="Procurement Proof and Financial Conservation"
     >

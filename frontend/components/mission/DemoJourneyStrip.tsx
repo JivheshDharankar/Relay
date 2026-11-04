@@ -35,7 +35,7 @@ interface DemoJourneyStripProps {
 
 export function DemoJourneyStrip({ stages, orchestrating, elapsedLabel }: DemoJourneyStripProps) {
   return (
-    <section aria-label="Demo mission journey" className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-3.5 sm:px-5">
+    <section aria-label="Demo mission journey" className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-3.5 sm:px-5">
       <ol className="flex flex-wrap sm:flex-nowrap items-start sm:overflow-x-auto">
         {DEMO_NODES.map((node, ni) => {
           const nodeState: NodeState = orchestrating
@@ -57,7 +57,7 @@ export function DemoJourneyStrip({ stages, orchestrating, elapsedLabel }: DemoJo
                 />
               )}
               <span className="relative flex flex-col items-center gap-1 text-center" title={titles || node.label}>
-                <span className="flex h-5 w-5 items-center justify-center bg-white relative z-10">
+                <span className="flex h-5 w-5 items-center justify-center bg-[#12161D] relative z-10">
                   {nodeState === 'VERIFIED' ? (
                     <CheckCircle2 className="h-5 w-5 text-relay-success-600" aria-hidden />
                   ) : nodeState === 'FAILED' ? (

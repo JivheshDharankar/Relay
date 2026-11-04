@@ -111,7 +111,7 @@ export default function CommandCenterPage() {
           {run.status !== 'idle' && (
             <Link
               href="/mission"
-              className="flex items-center justify-between gap-3 rounded-lg border border-relay-surface-border bg-white px-4 py-3 text-sm shadow-card hover:border-relay-navy-200 transition-colors"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-relay-surface-border bg-[#12161D] px-4 py-3 text-sm shadow-none hover:border-relay-navy-200 transition-colors"
             >
               <span className="font-semibold text-relay-ink-900">
                 {run.status === 'processing' && 'Relay is executing your mission.'}
@@ -178,14 +178,20 @@ export default function CommandCenterPage() {
             </div>
 
             {/* The request is the page. Everything else recedes. */}
-            <div>
-              <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-tight text-relay-ink-900 leading-tight">
-                What does your community need?
-              </h1>
-              <p className="text-[15px] text-relay-ink-600 mt-2 leading-relaxed max-w-2xl">
-                Describe a requirement. Relay coordinates discovery, negotiation,
-                execution and proof — inside your authorized mandate.
-              </p>
+            <div className="relative">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-56 w-[560px] max-w-full rounded-full bg-[#0866FF]/10 blur-3xl"
+              />
+              <div className="relative">
+                <p className="font-mono text-xs font-medium uppercase tracking-[0.14em] text-[#5B9BFF]">Command</p>
+                <h1 className="text-[32px] sm:text-[40px] leading-[40px] sm:leading-[48px] font-semibold tracking-tight text-[#E8EAED] mt-3">
+                  What does your community need?
+                </h1>
+                <p className="text-base leading-[26px] text-[#9AA3B2] mt-3 max-w-2xl">
+                  Describe a requirement in plain words. Relay discovers suppliers, compares quotes, coordinates execution and proves every rupee.
+                </p>
+              </div>
 
               <div className="mt-6">
                 {/* Composer */}
@@ -210,7 +216,7 @@ export default function CommandCenterPage() {
                     type="button"
                     disabled={!canProcure}
                     onClick={() => submitMission(DEMO_REQUEST, true)}
-                    className="inline-flex items-center gap-2 rounded-md border border-relay-surface-border bg-white hover:border-relay-navy-200 hover:bg-relay-navy-50 disabled:opacity-50 px-3.5 py-2 text-[13px] font-semibold text-relay-ink-900 transition-colors min-h-[38px]"
+                    className="inline-flex items-center gap-2 rounded-md border border-relay-surface-border bg-[#12161D] hover:border-relay-navy-200 hover:bg-relay-navy-50 disabled:opacity-50 px-3.5 py-2 text-[13px] font-semibold text-relay-ink-900 transition-colors min-h-[38px]"
                   >
                     <Play className="h-3.5 w-3.5 text-relay-ink-500" aria-hidden />
                     Run 30-second demo mission
@@ -224,10 +230,9 @@ export default function CommandCenterPage() {
                 <div className="mt-5 flex flex-wrap items-center gap-1.5">
                   <span className="text-xs text-relay-ink-500 mr-1">Try</span>
                   {[
-                    'Find the best bulk deal for 100 kg of rice for our society.',
-                    'Compare available suppliers for monthly cleaning supplies.',
-                    'Coordinate procurement for residents who requested water cans.',
-                    'I need 2 kg rice and 1 kg sugar.',
+                    'Find the best bulk deal for 100 kg of rice',
+                    'Compare suppliers for monthly cleaning supplies',
+                    'I need 2 kg rice and 1 kg sugar',
                     'मुझे 3 किलो दूध चाहिए',
                   ].map((example) => (
                     <button
@@ -237,7 +242,7 @@ export default function CommandCenterPage() {
                         setRetryPrompt(example);
                         setFillNonce((n) => n + 1);
                       }}
-                      className="rounded-md border border-relay-surface-border bg-white hover:border-relay-navy-200 hover:bg-relay-navy-50 px-2.5 py-1.5 text-[12.5px] text-relay-ink-700 transition-colors"
+                      className="rounded-md border border-relay-surface-border bg-[#12161D] hover:border-relay-navy-200 hover:bg-relay-navy-50 px-2.5 py-1.5 text-[12.5px] text-relay-ink-700 transition-colors"
                     >
                       {example}
                     </button>
@@ -251,33 +256,27 @@ export default function CommandCenterPage() {
             </div>
 
             {/* How Relay works: the procurement journey, end to end. */}
-            <section aria-label="How Relay works" className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 py-4">
-              <p className="font-mono text-[11px] text-relay-ink-500">How Relay works</p>
-              <ol className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2">
+            <section aria-label="How Relay works" className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#8A94A6]">How Relay works</p>
+              <ol className="mt-4 grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
                 {[
                   'Request',
-                  'Discovery',
-                  'Quotes',
-                  'Negotiation',
-                  'Selection',
-                  'Payment',
-                  'Fulfillment',
-                  'Verification',
-                  'Reconciliation',
-                ].map((step, i, arr) => (
-                  <li key={step} className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-relay-ink-900">
-                      <span className="font-mono text-[11px] text-relay-teal-600">{String(i + 1).padStart(2, '0')}</span>
-                      {step}
-                    </span>
-                    {i < arr.length - 1 && (
-                      <span className="text-relay-ink-300" aria-hidden>→</span>
-                    )}
+                  'Understand',
+                  'Discover',
+                  'Quote',
+                  'Select',
+                  'Pay',
+                  'Fulfil',
+                  'Reconcile',
+                ].map((step, i) => (
+                  <li key={step} className="rounded-xl border border-[#1E242E] bg-[#0D1117] px-3 py-3">
+                    <span className="font-mono text-xs text-[#5B9BFF]">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="block text-[15px] font-medium text-[#E8EAED] mt-1">{step}</span>
                   </li>
                 ))}
               </ol>
-              <p className="text-[13px] text-relay-ink-500 mt-3">
-                Muse recommends. Relay verifies and executes.
+              <p className="text-[15px] leading-[24px] text-[#9AA3B2] mt-4">
+                The model recommends. Deterministic code verifies, authorizes and executes.
               </p>
             </section>
 

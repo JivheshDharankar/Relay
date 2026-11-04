@@ -127,7 +127,7 @@ export default function AllocationDetailPage() {
                 </Card>
               ))}
 
-              <div className="rounded-lg border border-relay-surface-border bg-relay-surface-sunken/60 px-5 py-4">
+              <div className="rounded-2xl border border-relay-surface-border bg-relay-surface-sunken/60 px-5 py-4">
                 <p className="text-sm leading-relaxed text-relay-ink-700">
                   Conservation proof: all resident allocations must sum exactly to the
                   committed community total. Other residents&apos; shares stay private —

@@ -68,7 +68,7 @@ export function QuotesWorkspace() {
                             aria-selected={active}
                             onClick={() => setSelectedId(id)}
                             className={cn(
-                              'w-full text-left rounded-lg border px-3 py-2.5 transition-colors min-h-[44px]',
+                              'w-full text-left rounded-2xl border px-3 py-2.5 transition-colors min-h-[44px]',
                               active
                                 ? 'border-relay-primary-500 bg-relay-primary-50'
                                 : 'border-relay-surface-border hover:border-relay-primary-500/50'

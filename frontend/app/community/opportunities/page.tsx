@@ -79,7 +79,7 @@ export default function OpportunitiesPage() {
                 <li key={pool.productId}>
                   <Card className="px-5 sm:px-6 py-5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-relay-navy-900 text-white text-sm font-bold tnum shrink-0">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-relay-navy-900 text-white text-sm font-bold tnum shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">

@@ -84,7 +84,7 @@ function useCoordinates() {
 
 function CoordinateFields({ coords, idPrefix }: { coords: ReturnType<typeof useCoordinates>; idPrefix: string }) {
   return (
-    <div className="space-y-3 rounded-lg border border-relay-surface-border bg-relay-navy-50/60 px-3.5 py-3">
+    <div className="space-y-3 rounded-2xl border border-relay-surface-border bg-relay-navy-50/60 px-3.5 py-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold text-relay-ink-900 inline-flex items-center gap-1.5">
           <MapPin className="h-3.5 w-3.5 text-relay-ink-500" aria-hidden />
@@ -369,7 +369,7 @@ function OnboardingForm() {
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
       <div className="flex flex-col items-center text-center space-y-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-relay-navy-900">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-relay-navy-900">
           <Layers className="h-5 w-5 text-white" aria-hidden />
         </span>
         <div>
@@ -402,14 +402,14 @@ function OnboardingForm() {
       </ol>
 
       {error && (
-        <p className="flex items-start gap-2 rounded-lg border border-relay-danger-100 bg-relay-danger-50 px-3.5 py-2.5 text-[13px] text-relay-danger-700" role="alert">
+        <p className="flex items-start gap-2 rounded-2xl border border-relay-danger-100 bg-relay-danger-50 px-3.5 py-2.5 text-[13px] text-relay-danger-700" role="alert">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
           <span>{error}</span>
         </p>
       )}
 
       {currentStep === 'PROFILE_REQUIRED' && (
-        <form onSubmit={handleProfile} className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6">
+        <form onSubmit={handleProfile} className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6">
           <h2 className="text-base font-semibold text-relay-ink-900">Your profile</h2>
           <Field label="Full name" htmlFor="ob-name">
             <TextInput id="ob-name" required minLength={2} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" autoComplete="name" />
@@ -422,7 +422,7 @@ function OnboardingForm() {
       )}
 
       {currentStep === 'ADDRESS_REQUIRED' && (
-        <form onSubmit={handleAddress} className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6">
+        <form onSubmit={handleAddress} className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6">
           <h2 className="text-base font-semibold text-relay-ink-900">Delivery address</h2>
           <Field label="Address line" htmlFor="ob-address">
             <TextInput id="ob-address" required minLength={5} value={addressLine} onChange={(e) => setAddressLine(e.target.value)} placeholder="Flat, floor, street" autoComplete="street-address" />
@@ -444,10 +444,10 @@ function OnboardingForm() {
       )}
 
       {currentStep === 'SOCIETY_REQUIRED' && !registering && (
-        <div className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6">
+        <div className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6">
           <h2 className="text-base font-semibold text-relay-ink-900">Find your society</h2>
           {notice && (
-            <p className="rounded-lg border border-relay-success-100 bg-relay-success-50 px-3.5 py-2.5 text-[13px] text-relay-success-700" role="status">
+            <p className="rounded-2xl border border-relay-success-100 bg-relay-success-50 px-3.5 py-2.5 text-[13px] text-relay-success-700" role="status">
               {notice}
             </p>
           )}
@@ -459,7 +459,7 @@ function OnboardingForm() {
             <p className="text-[13px] text-relay-ink-600" role="status">Searching societies…</p>
           )}
           {searched && !searching && societies.length === 0 && (
-            <div className="rounded-lg border border-dashed border-relay-surface-border bg-relay-navy-50/50 px-4 py-5 text-center space-y-2">
+            <div className="rounded-2xl border border-dashed border-relay-surface-border bg-relay-navy-50/50 px-4 py-5 text-center space-y-2">
               <p className="text-sm font-semibold text-relay-ink-900">No society found</p>
               <p className="text-[13px] text-relay-ink-600">No registry entry matches that search. Register your society to continue.</p>
               <Button type="button" variant="outline" size="sm" onClick={() => setRegistering(true)}>
@@ -509,7 +509,7 @@ function OnboardingForm() {
       )}
 
       {currentStep === 'SOCIETY_REQUIRED' && registering && (
-        <form onSubmit={handleRegisterSociety} className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6">
+        <form onSubmit={handleRegisterSociety} className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6">
           <h2 className="text-base font-semibold text-relay-ink-900">Register society</h2>
           {submitting && (
             <p className="text-[13px] text-relay-ink-600" role="status">Registering society…</p>
@@ -544,7 +544,7 @@ function OnboardingForm() {
       )}
 
       {currentStep === 'SOCIETY_VERIFICATION_REQUIRED' && (
-        <div className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6 text-center">
+        <div className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6 text-center">
           <CheckCircle2 className="h-10 w-10 text-relay-primary-600 mx-auto" aria-hidden />
           <div>
             <h2 className="text-base font-semibold text-relay-ink-900">Verify membership</h2>
@@ -557,7 +557,7 @@ function OnboardingForm() {
       )}
 
       {currentStep === 'PAYMENT_AUTHORIZATION_REQUIRED' && (
-        <form onSubmit={handleMandate} className="space-y-4 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-6">
+        <form onSubmit={handleMandate} className="space-y-4 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-6">
           <h2 className="text-base font-semibold text-relay-ink-900">Payment mandate</h2>
           <p className="text-sm text-relay-ink-600 leading-relaxed">
             Authorize a spending ceiling for autonomous procurement. Relay can never charge

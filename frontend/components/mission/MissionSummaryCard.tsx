@@ -88,7 +88,7 @@ export function MissionSummaryCard({
       aria-label="Mission Complete Summary"
     >
       {/* Completion statement: what happened, proven, in plain figures. */}
-      <section className="rounded-lg border border-relay-surface-border bg-white shadow-card overflow-hidden">
+      <section className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-3 px-5 sm:px-6 pt-5 pb-4 border-b border-relay-surface-border">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-relay-ink-900">

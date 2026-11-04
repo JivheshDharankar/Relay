@@ -66,7 +66,7 @@ export default function RunsPage() {
                   className={
                     filter === chip.value
                       ? 'rounded-md bg-relay-navy-900 px-3 py-1.5 text-[12.5px] font-semibold text-white min-h-[34px]'
-                      : 'rounded-md border border-relay-surface-border bg-white px-3 py-1.5 text-[12.5px] font-semibold text-relay-ink-700 hover:bg-relay-surface-sunken min-h-[34px]'
+                      : 'rounded-md border border-relay-surface-border bg-[#12161D] px-3 py-1.5 text-[12.5px] font-semibold text-relay-ink-700 hover:bg-relay-surface-sunken min-h-[34px]'
                   }
                 >
                   {chip.label}
@@ -99,7 +99,7 @@ export default function RunsPage() {
                       <Card className="px-5 sm:px-6 py-5 group-hover:border-relay-primary-500/50 group-hover:shadow-raised transition-all">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 min-w-0">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-relay-navy-900 text-white shrink-0">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-relay-navy-900 text-white shrink-0">
                               <Radar className="h-5 w-5" aria-hidden />
                             </span>
                             <div className="min-w-0">

@@ -15,7 +15,7 @@ export function Container({ className, size = 'xl', ...props }: ContainerProps) 
   };
 
   return (
-    <div className={cn('w-full mx-auto px-4 sm:px-6 lg:px-8', maxSizes[size], className)} {...props} />
+    <div className={cn('w-full mx-auto px-4 sm:px-6 lg:px-12', maxSizes[size], className)} {...props} />
   );
 }
 
@@ -34,20 +34,35 @@ export function PageHeader({
     <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="font-mono text-[11px] font-medium text-relay-ink-500">
+          <p className="font-mono text-xs font-medium uppercase tracking-[0.14em] text-[#5B9BFF]">
             {eyebrow}
           </p>
         )}
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-relay-ink-900 mt-1">
+        <h1 className="text-[32px] leading-[40px] font-semibold tracking-tight text-[#E8EAED] mt-2">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-relay-ink-600 mt-1.5 leading-relaxed max-w-2xl">
+          <p className="text-[15px] leading-[24px] text-[#9AA3B2] mt-2 max-w-2xl">
             {description}
           </p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>
+  );
+}
+
+/** Section heading used inside pages (20px / 28px). */
+export function SectionTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <h2 className={cn('text-[20px] leading-[28px] font-semibold tracking-tight text-[#E8EAED]', className)}>
+      {children}
+    </h2>
   );
 }

@@ -80,7 +80,7 @@ export default function DiscoverStagePage() {
 
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {evidence.suppliers.map((s) => (
-                <li key={s.supplierId ?? s.supplierName} className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-4">
+                <li key={s.supplierId ?? s.supplierName} className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="text-sm font-semibold text-relay-ink-900 tracking-tight truncate">

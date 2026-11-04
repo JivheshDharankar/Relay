@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'success';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'destructive' | 'link';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -10,19 +10,23 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading = false, disabled, children, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-semibold transition-colors select-none disabled:opacity-50 disabled:pointer-events-none rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-relay-primary-500 focus-visible:ring-offset-2';
+      'inline-flex items-center justify-center font-semibold transition-colors select-none disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0D12]';
 
     const variants = {
       primary:
-        'bg-relay-primary-600 text-white border-transparent hover:bg-relay-primary-700',
+        'bg-relay-gradient text-white border border-transparent rounded-full hover:opacity-90 active:opacity-95 shadow-[0_4px_16px_-6px_rgba(8,102,255,0.55)]',
       secondary:
-        'bg-relay-navy-900 text-white border-transparent hover:bg-relay-navy-800',
+        'bg-[#1A1F28] text-[#E8EAED] border border-[#262C37] rounded-xl hover:bg-[#212836] hover:border-[#2E3644]',
       outline:
-        'bg-white text-relay-ink-900 border-relay-surface-border hover:border-relay-navy-200 hover:bg-relay-navy-50',
+        'bg-transparent text-[#E8EAED] border border-[#262C37] rounded-xl hover:border-[#2E3644] hover:bg-[#1A1F28]',
       ghost:
-        'bg-transparent text-relay-ink-700 border-transparent hover:bg-relay-navy-50 hover:text-relay-ink-900',
+        'bg-transparent text-[#9AA3B2] border border-transparent rounded-xl hover:bg-[#1A1F28] hover:text-[#E8EAED]',
       success:
-        'bg-relay-success-600 text-white border-transparent hover:bg-relay-success-700',
+        'bg-[#2FBF71] text-[#06130B] border border-transparent rounded-full hover:opacity-90',
+      destructive:
+        'bg-[#F05252] text-white border border-transparent rounded-xl hover:opacity-90',
+      link:
+        'bg-transparent text-[#5B9BFF] border border-transparent rounded-lg hover:underline underline-offset-4 px-1',
     };
 
     const sizes = {
@@ -35,7 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(baseStyles, variants[variant], variant !== 'link' && sizes[size], className)}
         {...props}
       >
         {isLoading && (

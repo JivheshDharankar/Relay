@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
-      <body className="min-h-screen bg-relay-surface-bg text-relay-ink-900 antialiased selection:bg-relay-primary-100 selection:text-relay-primary-700">
+      <body className="min-h-screen bg-[#0A0D12] text-[#E8EAED] antialiased">
         <AppFrame>{children}</AppFrame>
       </body>
     </html>

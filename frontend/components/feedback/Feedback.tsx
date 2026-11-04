@@ -16,7 +16,7 @@ function FeedbackShell({ icon, title, description, detail, action, className }: 
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center px-6 py-10 rounded-lg border border-relay-surface-border bg-white shadow-card',
+        'flex flex-col items-center justify-center text-center px-6 py-10 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none',
         className
       )}
       role="status"

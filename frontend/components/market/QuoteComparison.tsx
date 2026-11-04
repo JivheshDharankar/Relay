@@ -31,7 +31,7 @@ export function QuoteComparison({
   return (
     <div className="space-y-4">
       {evidence.commercialBasisSimulated === true && (
-        <p className="rounded-lg border border-relay-surface-border bg-relay-surface-sunken px-3 py-2 text-[11px] leading-relaxed text-relay-ink-600">
+        <p className="rounded-2xl border border-relay-surface-border bg-relay-surface-sunken px-3 py-2 text-[11px] leading-relaxed text-relay-ink-600">
           <strong className="font-semibold text-relay-ink-800">Commercial quote simulated.</strong>{' '}
           Supplier identity and discovery are real; commercial response is simulated.
         </p>
@@ -74,7 +74,7 @@ export function QuoteComparison({
       </Card>
 
       {evidence.commercialBasisSimulated === true && (
-        <p className="flex items-start gap-2 rounded-lg border border-relay-warn-100 bg-relay-warn-50 px-4 py-3 text-[13px] text-relay-warn-700" role="note">
+        <p className="flex items-start gap-2 rounded-2xl border border-relay-warn-100 bg-relay-warn-50 px-4 py-3 text-[13px] text-relay-warn-700" role="note">
           <Info className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
           <span>
             <strong className="font-semibold">Commercial terms simulated.</strong> Supplier discovery is
@@ -85,7 +85,7 @@ export function QuoteComparison({
       )}
 
       {evidence.selectionReason && (
-        <div className="rounded-lg border border-relay-success-100 bg-relay-success-50 px-5 py-4">
+        <div className="rounded-2xl border border-relay-success-100 bg-relay-success-50 px-5 py-4">
           <p className="font-mono text-[11px] text-relay-success-700">
             Relay pick — backend-selected winner
           </p>

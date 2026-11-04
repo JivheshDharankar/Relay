@@ -99,7 +99,7 @@ function DemoDetails({
 }) {
   if (!demoMode) return <>{children}</>;
   return (
-    <details className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-3 sm:px-5">
+    <details className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-3 sm:px-5">
       <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-relay-ink-900 [&::-webkit-details-marker]:hidden">
         <ChevronRight className="h-4 w-4 text-relay-primary-600" aria-hidden />
         {label}
@@ -383,14 +383,14 @@ export function AutonomousMissionControl({
         initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="relative overflow-hidden rounded-xl bg-relay-navy-950 text-white shadow-hero px-5 py-5 sm:px-7 sm:py-6"
+        className="relative overflow-hidden rounded-2xl border border-[#262C37] bg-[#0D1117] text-white px-5 py-5 sm:px-7 sm:py-6"
       >
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-relay-teal-500"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-relay-gradient"
           aria-hidden
         />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="flex items-center gap-2 font-mono text-[11px] text-relay-navy-200">
+          <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-[#5B9BFF]">
             <span
               className={`h-1.5 w-1.5 rounded-full ${isProcessing || isLaunching ? 'bg-relay-teal-500 animate-pulse' : hasFailedStage ? 'bg-red-400' : 'bg-emerald-400'}`}
               aria-hidden
@@ -500,6 +500,28 @@ export function AutonomousMissionControl({
           </span>
         </div>
 
+        {/* Segmented progress: 13 segments driven by backend stage state. */}
+        <div className="mt-4 flex gap-1" role="img" aria-label={`Mission progress: ${verifiedCount} of 13 stages`}>
+          {CANONICAL_STAGES.map((def, idx) => {
+            const state = getStageVisualState(idx);
+            return (
+              <span
+                key={def.stage}
+                title={`${String(idx + 1).padStart(2, '0')} ${def.label}`}
+                className={`h-1.5 flex-1 rounded-full ${
+                  state === 'VERIFIED'
+                    ? 'bg-[#2FBF71]'
+                    : state === 'FAILED'
+                      ? 'bg-[#F05252]'
+                      : state === 'ACTIVE'
+                        ? 'bg-[#0866FF] relay-pulse-dot'
+                        : 'bg-[#262C37]'
+                }`}
+              />
+            );
+          })}
+        </div>
+
         {/* Execution note while orchestrating */}
         {(isProcessing || isLaunching) && (
           <p className="mt-2 text-[13px] text-relay-navy-100 leading-relaxed max-w-2xl">
@@ -509,6 +531,66 @@ export function AutonomousMissionControl({
           </p>
         )}
       </motion.header>
+
+      {/* Supplier rationale + mandate guard: backend evidence only. */}
+      {(quotes || validatedTotal !== null) && !(isProcessing || isLaunching) && (
+        <section aria-label="Supplier selection and mandate guard" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#8A94A6]">Supplier selection</p>
+            <p className="text-[20px] leading-[28px] font-semibold text-[#E8EAED] mt-2">{winningSupplier}</p>
+            <dl className="mt-3 space-y-2 text-[15px]">
+              {validatedTotal !== null && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Quote amount</dt>
+                  <dd className="font-mono font-semibold text-[#E8EAED] tnum">{formatMoney(validatedTotal, payment?.currency || mandateCurrency)}</dd>
+                </div>
+              )}
+              {slaHours !== null && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Delivery</dt>
+                  <dd className="font-mono text-[#E8EAED] tnum">{slaHours}h</dd>
+                </div>
+              )}
+            </dl>
+            {quotes?.selectionReason && (
+              <p className="text-[15px] leading-[24px] text-[#9AA3B2] mt-3">{quotes.selectionReason}</p>
+            )}
+            {quotes?.commercialBasisSimulated === true && (
+              <p className="mt-3 inline-flex rounded-full border border-[#3A2E66] bg-[#1E1A33] px-2.5 py-1 text-xs font-semibold text-[#B9A5FF]">Commercial quote simulated</p>
+            )}
+          </div>
+          <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#8A94A6]">Mandate guard</p>
+            <dl className="mt-3 space-y-2 text-[15px]">
+              {validatedTotal !== null && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Order amount</dt>
+                  <dd className="font-mono font-semibold text-[#E8EAED] tnum">{formatMoney(validatedTotal, payment?.currency || mandateCurrency)}</dd>
+                </div>
+              )}
+              {mandateLimit !== null && mandateLimit !== undefined && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Mandate limit</dt>
+                  <dd className="font-mono font-semibold text-[#E8EAED] tnum">{formatMoney(mandateLimit, mandateCurrency)}</dd>
+                </div>
+              )}
+              {payment?.status && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Authorization result</dt>
+                  <dd className="font-mono text-[#E8EAED]">{payment.status}</dd>
+                </div>
+              )}
+              {commitment?.status && !payment?.status && (
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-[#9AA3B2]">Authorization result</dt>
+                  <dd className="font-mono text-[#E8EAED]">{commitment.status}</dd>
+                </div>
+              )}
+            </dl>
+            <p className="text-[15px] leading-[24px] text-[#9AA3B2] mt-3">Amounts and authorization are backend-reported. Relay never recomputes money in the browser.</p>
+          </div>
+        </section>
+      )}
 
       {/* Demo journey: compact milestones first (demo only). */}
       {demoMode && (
@@ -591,7 +673,7 @@ export function AutonomousMissionControl({
           />
         </div>
 
-        <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-3 py-4 sm:px-5 sm:py-5">
+        <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-3 py-4 sm:px-5 sm:py-5">
           <ol className="flex flex-wrap sm:flex-nowrap items-start sm:overflow-x-auto pb-1" aria-label="Mission stages">
           {CANONICAL_STAGES.map((def, idx) => {
             const visualState = getStageVisualState(idx);
@@ -663,13 +745,13 @@ export function AutonomousMissionControl({
                   }}
                   aria-expanded={isExpanded}
                   aria-label={`${def.label} stage evidence`}
-                  className={`relative z-10 flex w-full flex-col items-center gap-1.5 rounded-lg px-0.5 py-1 text-center ${
+                  className={`relative z-10 flex w-full flex-col items-center gap-1.5 rounded-2xl px-0.5 py-1 text-center ${
                     expandable ? 'cursor-pointer' : 'cursor-default'
                   } ${isExpanded ? 'bg-relay-navy-50' : ''}`}
                 >
                   <span
                     className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold shrink-0 border transition-colors ${
-                      orchestrating ? 'ring-2 ring-relay-primary-500/30 ring-offset-2 ring-offset-white' : ''
+                      orchestrating ? 'ring-2 ring-relay-primary-500/30 ring-offset-2 ring-offset-[#12161D]' : ''
                     } ${
                       isVerified
                         ? 'bg-relay-success-600 border-relay-success-600 text-white'
@@ -678,8 +760,8 @@ export function AutonomousMissionControl({
                           : isActive
                             ? 'bg-relay-primary-600 border-relay-primary-600 text-white'
                             : isExpanded
-                              ? 'bg-white border-relay-navy-800 text-relay-ink-900'
-                              : 'bg-white border-relay-surface-border text-relay-ink-400'
+                              ? 'bg-[#12161D] border-relay-navy-800 text-relay-ink-900'
+                              : 'bg-[#12161D] border-relay-surface-border text-relay-ink-400'
                     }`}
                   >
                     {isVerified ? (
@@ -759,7 +841,7 @@ export function AutonomousMissionControl({
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 className="overflow-hidden"
               >
-                <div className="rounded-lg border border-relay-surface-border bg-white shadow-card p-4 sm:p-5">
+                <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none p-4 sm:p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-relay-surface-border">
                     <p className="flex items-baseline gap-2 min-w-0">
                       <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-relay-ink-500 whitespace-nowrap">

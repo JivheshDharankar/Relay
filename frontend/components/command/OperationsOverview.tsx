@@ -59,7 +59,7 @@ export function OperationsOverview({
   return (
     <section aria-label="Operations overview" className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[15px] font-semibold tracking-tight text-relay-ink-900">Operations</h2>
+        <h2 className="text-[20px] leading-[28px] font-semibold tracking-tight text-[#E8EAED]">Operations</h2>
         <Link href="/runs" className="inline-flex items-center gap-1 text-[13px] font-semibold text-relay-primary-700 hover:text-relay-primary-600 min-h-[32px]">
           View all runs
           <ArrowRight className="h-3.5 w-3.5" aria-hidden />
@@ -68,7 +68,7 @@ export function OperationsOverview({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recent missions */}
-        <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 py-4">
+        <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
           <p className="flex items-center gap-2 text-xs font-medium text-relay-ink-500">
             <Radar className="h-4 w-4 text-relay-ink-400" aria-hidden />
             Recent missions
@@ -115,7 +115,7 @@ export function OperationsOverview({
         </div>
 
         {/* Orders in progress */}
-        <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 py-4">
+        <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
           <p className="flex items-center gap-2 text-xs font-medium text-relay-ink-500">
             <ClipboardList className="h-4 w-4 text-relay-ink-400" aria-hidden />
             Orders in progress
@@ -143,7 +143,7 @@ export function OperationsOverview({
         </div>
 
         {/* Mandate + reconciliation snapshot */}
-        <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 py-4">
+        <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5">
           <p className="flex items-center gap-2 text-xs font-medium text-relay-ink-500">
             <Wallet className="h-4 w-4 text-relay-ink-400" aria-hidden />
             Mandate & proof

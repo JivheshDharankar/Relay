@@ -76,7 +76,7 @@ export default function ImpactPage() {
                   { label: 'Residents pooled', value: String(community.registeredResidents) },
                   { label: 'Collective savings', value: formatPercent(community.collectiveSavingsEstimatePct) },
                 ].map((s) => (
-                  <div key={s.label} className="rounded-lg border border-relay-surface-border bg-white shadow-card px-4 py-3.5">
+                  <div key={s.label} className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-4 py-3.5">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-relay-ink-500">{s.label}</p>
                     <p className="font-mono text-lg font-semibold tnum mt-1">{s.value}</p>
                   </div>

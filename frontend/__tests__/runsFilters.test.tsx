@@ -23,21 +23,11 @@ vi.mock('@/lib/workflow/runStore', () => ({
 
 function makeRun(overrides: Partial<ProcurementRun>): ProcurementRun {
   return {
-    id: overrides.id ?? 'run-1',
     prompt: '2 kg rice',
-    residentReference: 'res_1',
-    societyReference: 'soc_1',
-    source: 'manual',
     status: 'complete',
-    phase: 'idle',
-    isProcessing: false,
-    rawError: null,
     startedAt: '2026-11-03T10:00:00.000Z',
     finishedAt: '2026-11-03T10:01:00.000Z',
     agentResponse: { runId: 'run-1' } as ProcurementRun['agentResponse'],
-    steps: [],
-    totalSteps: 0,
-    response: '',
     fullCycle: null,
     residentOrderId: null,
     communityOrderId: null,
@@ -49,13 +39,12 @@ function makeRun(overrides: Partial<ProcurementRun>): ProcurementRun {
 describe('Runs status filters', () => {
   it('filters recorded runs by completion status with honest counts', () => {
     mockState.runs = [
-      makeRun({ id: 'run-ok', prompt: '2 kg rice', agentResponse: { runId: 'run-ok' } as ProcurementRun['agentResponse'] }),
+      makeRun({ prompt: '2 kg rice', agentResponse: { runId: 'run-ok' } as ProcurementRun['agentResponse'] }),
       makeRun({
-        id: 'run-bad',
         prompt: '6 eggs',
         status: 'failed',
         agentResponse: { runId: 'run-bad' } as ProcurementRun['agentResponse'],
-        error: { message: 'Needs clarification', code: 'AMBIGUOUS' },
+        error: { message: 'Needs clarification', code: 'AMBIGUOUS', timedOut: false, unauthorized: false },
       }),
     ];
     render(<RunsPage />);

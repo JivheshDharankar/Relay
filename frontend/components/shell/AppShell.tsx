@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 interface NavItem {
   name: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
 }
 
 interface NavSection {
@@ -39,7 +39,7 @@ interface NavSection {
 export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Command',
-    items: [{ name: 'Command', href: '/', icon: Home }],
+    items: [{ name: 'Command Center', href: '/', icon: Home }],
   },
   {
     label: 'Mission',
@@ -90,13 +90,13 @@ function isActive(pathname: string, href: string): boolean {
 
 function Brand({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <Link href="/" onClick={onNavigate} className="flex items-center gap-2.5 shrink-0 min-w-0" aria-label="Relay home">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-relay-teal-600 shadow-[0_2px_10px_-2px_rgba(20,184,166,0.5)]">
-        <Layers className="h-4 w-4 text-white" aria-hidden />
+    <Link href="/" onClick={onNavigate} className="flex items-center gap-3 shrink-0 min-w-0" aria-label="Relay home">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-relay-gradient">
+        <Layers className="h-[18px] w-[18px] text-white" strokeWidth={1.8} aria-hidden />
       </span>
       <span className="flex flex-col leading-tight min-w-0">
         <span className="font-semibold text-white text-[15px] tracking-tight truncate">Relay</span>
-        <span className="text-[11px] text-relay-navy-200 truncate">Community procurement</span>
+        <span className="text-[11px] text-[#8A94A6] truncate">Community procurement</span>
       </span>
     </Link>
   );
@@ -105,13 +105,13 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav className="flex-1 overflow-y-auto py-3 space-y-4" aria-label="Primary">
+    <nav className="flex-1 overflow-y-auto py-4 space-y-5" aria-label="Primary">
       {NAV_SECTIONS.map((section) => (
         <div key={section.label}>
-          <p className="px-4 font-mono text-[10.5px] text-relay-navy-200/70 mb-1">
+          <p className="px-5 font-mono text-xs uppercase tracking-[0.14em] text-[#8A94A6] mb-1.5">
             {section.label}
           </p>
-          <ul className="space-y-px px-2">
+          <ul className="space-y-px px-3">
             {section.items.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -121,17 +121,18 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={onNavigate}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'flex items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[13.5px] min-h-[36px] transition-colors',
+                      'flex items-center gap-3 rounded-[10px] px-3 py-2 text-[14px] min-h-[40px] transition-colors duration-150',
                       active
-                        ? 'bg-relay-navy-800 text-white font-semibold shadow-[inset_3px_0_0_0_#14B8A6]'
-                        : 'font-medium text-relay-navy-100/80 hover:text-white hover:bg-relay-navy-800/60'
+                        ? 'bg-[#111E33] text-white font-semibold shadow-[inset_2px_0_0_0_#0866FF]'
+                        : 'font-medium text-[#9AA3B2] hover:text-[#E8EAED] hover:bg-[#1A1F28]'
                     )}
                   >
                     <item.icon
                       className={cn(
-                        'h-4 w-4 shrink-0',
-                        active ? 'text-relay-teal-500' : 'text-relay-navy-200/80'
+                        'h-[18px] w-[18px] shrink-0',
+                        active ? 'text-[#5B9BFF]' : 'text-[#8A94A6]'
                       )}
+                      strokeWidth={1.8}
                       aria-hidden
                     />
                     <span className="flex-1 truncate">{item.name}</span>
@@ -165,18 +166,18 @@ function SidebarFooter({
 }) {
   if (loading) {
     return (
-      <div className="px-4 py-3.5 border-t border-white/10">
-        <div className="h-8 rounded-md bg-relay-navy-800 animate-pulse" aria-hidden />
+      <div className="px-4 py-4 border-t border-[#1E242E]">
+        <div className="h-9 rounded-[10px] bg-[#1A1F28] animate-pulse" aria-hidden />
       </div>
     );
   }
   if (!authenticated) {
     return (
-      <div className="px-4 py-3.5 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-[#1E242E]">
         <Link
           href="/login"
           onClick={onNavigate}
-          className="flex items-center justify-center rounded-md bg-relay-teal-600 hover:bg-relay-teal-500 text-white text-[13px] font-semibold px-3 py-2 min-h-[38px] transition-colors"
+          className="flex items-center justify-center rounded-full bg-relay-gradient text-white text-[13px] font-semibold px-3 py-2 min-h-[40px] transition-opacity hover:opacity-90"
         >
           Sign in
         </Link>
@@ -184,13 +185,12 @@ function SidebarFooter({
     );
   }
   if (!societyName) {
-    // Signed in but no society joined yet: guide forward, never a fake identity.
     return (
-      <div className="px-4 py-3.5 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-[#1E242E]">
         <Link
           href="/onboarding"
           onClick={onNavigate}
-          className="flex items-center justify-center rounded-md bg-relay-teal-600 hover:bg-relay-teal-500 text-white text-[13px] font-semibold px-3 py-2 min-h-[38px] transition-colors"
+          className="flex items-center justify-center rounded-full bg-relay-gradient text-white text-[13px] font-semibold px-3 py-2 min-h-[40px] transition-opacity hover:opacity-90"
         >
           Complete onboarding
         </Link>
@@ -198,19 +198,19 @@ function SidebarFooter({
     );
   }
   return (
-    <div className="px-4 py-3.5 border-t border-white/10">
+    <div className="px-5 py-4 border-t border-[#1E242E]">
       <p className="text-[13px] font-semibold text-white truncate">{societyName}</p>
-      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-relay-navy-200 truncate">
+      <p className="mt-1 flex items-center gap-1.5 text-xs text-[#8A94A6] truncate">
         <span className="font-mono">{flatLabel ?? 'Resident'}</span>
         {mandateActive === true && (
-          <span className="inline-flex items-center gap-1 text-emerald-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+          <span className="inline-flex items-center gap-1 text-[#5AD68F]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#2FBF71]" aria-hidden />
             Mandate active
           </span>
         )}
         {mandateActive === false && (
-          <span className="inline-flex items-center gap-1 text-amber-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden />
+          <span className="inline-flex items-center gap-1 text-[#F7B955]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#F5A524]" aria-hidden />
             No mandate
           </span>
         )}
@@ -218,7 +218,7 @@ function SidebarFooter({
       <button
         type="button"
         onClick={onSignOut}
-        className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-relay-navy-200 hover:text-white transition-colors min-h-[28px]"
+        className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#8A94A6] hover:text-white transition-colors min-h-[28px]"
       >
         <LogOut className="h-3.5 w-3.5" aria-hidden />
         Sign out
@@ -246,7 +246,6 @@ export function AppShell({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Drawer a11y: Escape closes, background scroll locks while open.
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -262,10 +261,10 @@ export function AppShell({
   }, [drawerOpen]);
 
   return (
-    <div className="min-h-screen bg-relay-surface-bg text-relay-ink-900 lg:pl-[232px]">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[232px] flex-col bg-relay-navy-900 z-40">
-        <div className="px-4 pt-4 pb-3 border-b border-white/10">
+    <div className="min-h-screen bg-[#0A0D12] text-[#E8EAED] lg:pl-[248px]">
+      {/* Desktop sidebar — 248px, spec §2.1 */}
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[248px] flex-col bg-[#0D1117] border-r border-[#262C37] z-40">
+        <div className="px-5 pt-5 pb-4 border-b border-[#1E242E]">
           <Brand />
         </div>
         <SidebarNav />
@@ -280,22 +279,22 @@ export function AppShell({
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden sticky top-0 z-40 bg-relay-navy-900">
-        <div className="flex items-center justify-between gap-2 px-4 h-[56px]">
+      <header className="lg:hidden sticky top-0 z-40 bg-[#0D1117] border-b border-[#262C37]">
+        <div className="flex items-center justify-between gap-2 px-4 h-[60px]">
           <div className="min-w-0 flex-1">
             <Brand />
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {identity.authenticated && identity.mandateActive === true && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#5AD68F]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#2FBF71]" aria-hidden />
                 Mandate active
               </span>
             )}
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-relay-navy-100 hover:bg-relay-navy-800 transition-colors min-h-[44px] min-w-[44px]"
+              className="inline-flex items-center justify-center p-2 rounded-[10px] text-[#9AA3B2] hover:bg-[#1A1F28] hover:text-white transition-colors min-h-[44px] min-w-[44px]"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" aria-hidden />
@@ -308,17 +307,17 @@ export function AppShell({
       {drawerOpen && (
         <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Navigation">
           <div
-            className="absolute inset-0 bg-relay-navy-950/60"
+            className="absolute inset-0 bg-black/60"
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] flex flex-col bg-relay-navy-900 shadow-raised">
-            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/10">
+          <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] flex flex-col bg-[#0D1117] border-r border-[#262C37]">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1E242E]">
               <Brand onNavigate={() => setDrawerOpen(false)} />
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-relay-navy-100 hover:bg-relay-navy-800 transition-colors min-h-[44px] min-w-[44px]"
+                className="inline-flex items-center justify-center p-2 rounded-[10px] text-[#9AA3B2] hover:bg-[#1A1F28] hover:text-white transition-colors min-h-[44px] min-w-[44px]"
                 aria-label="Close navigation menu"
               >
                 <X className="h-5 w-5" aria-hidden />
@@ -344,10 +343,10 @@ export function AppShell({
       {/* Content */}
       <div className="flex flex-col min-h-screen">
         <main className="flex-1 w-full pb-10">{children}</main>
-        <footer className="border-t border-relay-surface-border bg-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-relay-ink-500">
+        <footer className="border-t border-[#1E242E]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-[#8A94A6]">
             <span>Relay — autonomous community procurement</span>
-            <span>State shown is backend-verified</span>
+            <span>The model recommends. Deterministic code verifies, authorizes and executes.</span>
           </div>
         </footer>
       </div>

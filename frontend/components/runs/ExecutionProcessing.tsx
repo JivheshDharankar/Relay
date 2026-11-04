@@ -17,7 +17,7 @@ export function ExecutionProcessing({
     <section
       aria-label="Relay is executing"
       aria-busy="true"
-      className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-5"
+      className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 sm:px-6 py-5"
     >
       <div className="flex items-start gap-3.5">
         <Loader2 className="h-5 w-5 animate-spin text-relay-primary-600 shrink-0 mt-0.5" aria-hidden />

@@ -81,7 +81,7 @@ export default function AllocationHubPage() {
                     <Card className="px-5 py-4 group-hover:border-relay-primary-500/50 group-hover:shadow-raised transition-all">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-relay-navy-50 text-relay-primary-600 shrink-0">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-relay-navy-50 text-relay-primary-600 shrink-0">
                             <PieChart className="h-5 w-5" aria-hidden />
                           </span>
                           <div className="min-w-0">
