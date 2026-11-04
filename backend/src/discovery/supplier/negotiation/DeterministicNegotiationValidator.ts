@@ -200,8 +200,14 @@ export class DeterministicNegotiationValidator {
 
     // Competitor confidentiality: Supplier A must not be informed of Supplier B's identity
     for (const competitor of competitorNames) {
-      if (competitor && competitor.toLowerCase() !== proposal.candidateId.toLowerCase()) {
-        const competitorRegex = new RegExp(`\\b${escapeRegExp(competitor)}\\b`, 'i');
+      const trimmed = competitor?.trim();
+      if (
+        trimmed &&
+        trimmed.length >= 3 &&
+        !/^\d+$/.test(trimmed) &&
+        trimmed.toLowerCase() !== proposal.candidateId.toLowerCase()
+      ) {
+        const competitorRegex = new RegExp(`\\b${escapeRegExp(trimmed)}\\b`, 'i');
         if (competitorRegex.test(messageToCheck)) {
           errors.push(
             `CONFIDENTIALITY_VIOLATION: Message reveals competitor supplier identity '${competitor}'`
