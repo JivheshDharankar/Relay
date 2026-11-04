@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 body {
-  color: #172033;
-  background-color: #e8edf2;
+  color: #e8eaed;
+  background-color: #0a0d12;
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 *:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #5b9bff;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -34,10 +34,10 @@ body {
 
 @keyframes relay-stage-illuminate {
   0% {
-    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.45);
+    box-shadow: 0 0 0 0 rgba(47, 191, 113, 0.45);
   }
   100% {
-    box-shadow: 0 0 0 12px rgba(5, 150, 105, 0);
+    box-shadow: 0 0 0 12px rgba(47, 191, 113, 0);
   }
 }
 
@@ -45,15 +45,35 @@ body {
   animation: relay-stage-illuminate 700ms ease-out both;
 }
 
+@keyframes relay-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.relay-pulse-dot {
+  animation: relay-pulse-dot 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .relay-evidence-in,
-  .relay-illuminate {
+  .relay-illuminate,
+  .relay-pulse-dot {
     animation: none;
   }
 }
 
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: rgba(8, 102, 255, 0.35);
+  color: #e8eaed;
 }
 
 ::-webkit-scrollbar {
@@ -66,10 +86,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c6cdd4;
+  background: #262c37;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9aa5b1;
+  background: #2e3644;
 }

@@ -18,13 +18,13 @@ export function Field({
 }) {
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label htmlFor={htmlFor} className="block text-[13px] font-semibold text-relay-ink-900">
+      <label htmlFor={htmlFor} className="block text-[13px] font-semibold text-[#E8EAED]">
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-xs text-relay-ink-500">{hint}</p>}
+      {hint && !error && <p className="text-[13px] text-[#9AA3B2]">{hint}</p>}
       {error && (
-        <p className="text-xs text-relay-danger-700 font-medium" role="alert">
+        <p className="text-[13px] text-[#F87171] font-medium" role="alert">
           {error}
         </p>
       )}
@@ -33,7 +33,7 @@ export function Field({
 }
 
 export const inputClassName =
-  'w-full rounded-lg border border-relay-surface-border bg-white px-3.5 py-2.5 text-sm text-relay-ink-900 placeholder:text-relay-ink-400 outline-none transition-colors focus:border-relay-primary-500 focus:ring-2 focus:ring-relay-primary-500/20 disabled:opacity-60 disabled:bg-relay-navy-50 min-h-[44px]';
+  'w-full rounded-xl border border-[#262C37] bg-[#0D1117] px-3.5 py-2.5 text-[15px] text-[#E8EAED] placeholder:text-[#8A94A6] outline-none transition-colors focus:border-[#0866FF] focus:ring-2 focus:ring-[#0866FF]/25 disabled:opacity-60 disabled:bg-[#12161D] min-h-[48px]';
 
 export function TextInput({
   className,

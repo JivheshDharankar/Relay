@@ -19,7 +19,7 @@ export default function ErrorPage({
   return (
     <div className="flex-1 flex items-center justify-center py-20">
       <Container size="sm">
-        <Card className="border-relay-danger-100 bg-white">
+        <Card className="border-relay-danger-100 bg-[#12161D]">
           <CardContent className="p-8 text-center flex flex-col items-center">
             <div className="h-10 w-10 rounded-full bg-relay-danger-50 text-relay-danger-600 flex items-center justify-center mb-4">
               <AlertTriangle className="h-5 w-5" aria-hidden />

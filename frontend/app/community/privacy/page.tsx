@@ -118,7 +118,7 @@ export default function PrivacyPage() {
                   )}
                   {viewError && <ErrorState title="Supplier view unavailable" description={viewError} />}
                   {supplierView && (
-                    <pre className="rounded-lg bg-relay-navy-900 text-relay-navy-100 text-xs font-mono p-4 overflow-x-auto leading-relaxed">
+                    <pre className="rounded-2xl bg-relay-navy-900 text-relay-navy-100 text-xs font-mono p-4 overflow-x-auto leading-relaxed">
                       {JSON.stringify(supplierView, null, 2)}
                     </pre>
                   )}

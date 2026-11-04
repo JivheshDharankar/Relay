@@ -95,7 +95,7 @@ export function StageDetailShell({
                 {evidence.state === 'failed' && <Badge variant="error">Failed</Badge>}
               </div>
 
-              <div className={`rounded-lg border px-5 py-4 ${evidence.state === 'failed' ? 'border-relay-danger-100 bg-relay-danger-50' : 'border-relay-surface-border bg-relay-surface-sunken/60'}`}>
+              <div className={`rounded-2xl border px-5 py-4 ${evidence.state === 'failed' ? 'border-relay-danger-100 bg-relay-danger-50' : 'border-relay-surface-border bg-relay-surface-sunken/60'}`}>
                 <div className="flex items-start gap-3">
                   {evidence.state === 'verified' && <CheckCircle2 className="h-5 w-5 text-relay-success-600 shrink-0 mt-0.5" aria-hidden />}
                   {evidence.state === 'absent' && <CircleDashed className="h-5 w-5 text-relay-ink-400 shrink-0 mt-0.5" aria-hidden />}

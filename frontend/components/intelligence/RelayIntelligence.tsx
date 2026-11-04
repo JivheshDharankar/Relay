@@ -23,7 +23,7 @@ export function RelayIntelligence({
   return (
     <section
       aria-label="Relay Intelligence"
-      className="rounded-lg border border-relay-surface-border bg-white shadow-card overflow-hidden"
+      className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none overflow-hidden"
     >
       <div className="px-5 pt-4 pb-3 sm:px-6 border-b border-relay-surface-border">
         <div className="flex items-center justify-between gap-3">

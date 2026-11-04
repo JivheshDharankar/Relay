@@ -25,7 +25,7 @@ function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
     <p
-      className="flex items-start gap-2 rounded-lg border border-relay-danger-100 bg-relay-danger-50 px-3.5 py-2.5 text-[13px] text-relay-danger-700"
+      className="flex items-start gap-2 rounded-2xl border border-relay-danger-100 bg-relay-danger-50 px-3.5 py-2.5 text-[13px] text-relay-danger-700"
       role="alert"
     >
       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
@@ -225,16 +225,16 @@ function LoginForm() {
   if (sessionStatus === 'authenticated') return <LoadingState title="Signed in — redirecting" />;
 
   return (
-    <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-12 items-center">
+    <div className="w-full max-w-[440px] mx-auto flex flex-col gap-8">
       {/* Product story: static explanation, never live activity. */}
-      <div className="space-y-7 px-1">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-relay-navy-900 shadow-raised">
+      <div className="space-y-7 px-1 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-relay-gradient">
             <Layers className="h-5 w-5 text-white" aria-hidden />
           </span>
           <div className="leading-tight">
-            <p className="font-bold text-relay-ink-900 text-xl tracking-tight">RELAY</p>
-            <p className="text-[13px] text-relay-ink-600">Autonomous community procurement</p>
+            <p className="font-bold text-white text-xl tracking-tight">Relay</p>
+            <p className="text-[13px] text-[#8A94A6]">Community procurement</p>
           </div>
         </div>
 
@@ -248,8 +248,8 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-5 sm:px-6 py-5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-relay-ink-500">
+        <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-5 sm:px-6 py-5 text-left">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#8A94A6]">
             How Relay works
           </p>
           <ol className="mt-4 space-y-0" aria-label="Relay procurement concept">
@@ -292,8 +292,8 @@ function LoginForm() {
       </div>
 
       {/* Sign-in card: verified auth logic below is unchanged. */}
-      <div className="w-full max-w-md mx-auto lg:mx-0 lg:justify-self-end">
-      <div className="rounded-lg border border-relay-surface-border bg-white shadow-card px-6 sm:px-8 py-8 space-y-5">
+      <div className="w-full">
+      <div className="rounded-2xl border border-[#262C37] bg-[#12161D] px-6 sm:px-8 py-8 space-y-5">
         <div className="flex flex-col items-center text-center space-y-3">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-relay-ink-900">Sign in to Relay</h2>
@@ -346,7 +346,7 @@ function LoginForm() {
           <span className="flex-1 h-px bg-relay-surface-border" aria-hidden />
         </div>
 
-        <div className="grid grid-cols-2 gap-1 rounded-lg bg-relay-navy-50 border border-relay-surface-border p-1" role="tablist" aria-label="Sign-in method">
+        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-relay-navy-50 border border-relay-surface-border p-1" role="tablist" aria-label="Sign-in method">
           {(
             [
               { id: 'email', label: 'Email', icon: Mail },
@@ -360,7 +360,7 @@ function LoginForm() {
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
               className={`inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors min-h-[40px] ${
-                tab === t.id ? 'bg-white text-relay-ink-900 shadow-card' : 'text-relay-ink-600 hover:text-relay-ink-900'
+                tab === t.id ? 'bg-[#12161D] text-relay-ink-900 shadow-none' : 'text-relay-ink-600 hover:text-relay-ink-900'
               }`}
             >
               <t.icon className="h-4 w-4" aria-hidden />
@@ -472,7 +472,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex-1 flex items-center py-10 sm:py-14">
+    <div className="relative flex-1 flex items-center py-10 sm:py-14 overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-64 w-[640px] max-w-full rounded-full bg-[#0866FF]/10 blur-3xl" />
       <Container size="xl">
         <Suspense fallback={<LoadingState title="Loading sign-in" />}>
           <LoginForm />

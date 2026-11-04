@@ -67,7 +67,7 @@ function StageNode({
   const card = (
     <div
       className={cn(
-        'rounded-lg border bg-white shadow-card px-4 sm:px-5 py-4 transition-colors',
+        'rounded-2xl border bg-[#12161D] shadow-none px-4 sm:px-5 py-4 transition-colors',
         evidence.state === 'failed' ? 'border-relay-danger-100' : 'border-relay-surface-border',
         detailHref && 'hover:border-relay-navy-200 cursor-pointer'
       )}
@@ -154,7 +154,7 @@ function StageNode({
       )}
       <span
         className={cn(
-          'absolute left-0 sm:left-[2px] top-[18px] rounded-full bg-white shadow-card ring-1 ring-relay-surface-border',
+          'absolute left-0 sm:left-[2px] top-[18px] rounded-full bg-[#12161D] shadow-none ring-1 ring-relay-surface-border',
           reveal && evidence.state === 'verified' && 'relay-illuminate'
         )}
         style={reveal ? { animationDelay: `${Math.min(index * 120, 1440)}ms` } : undefined}

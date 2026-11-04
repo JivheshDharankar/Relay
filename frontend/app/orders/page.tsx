@@ -119,10 +119,10 @@ export default function OrdersPage() {
                     role="tab"
                     aria-selected={filter === f.id}
                     onClick={() => setFilter(f.id)}
-                    className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors min-h-[36px] ${
+                    className={`px-3.5 py-2 rounded-2xl text-xs font-semibold transition-colors min-h-[36px] ${
                       filter === f.id
                         ? 'bg-relay-navy-900 text-white'
-                        : 'bg-white border border-relay-surface-border text-relay-ink-600 hover:bg-relay-navy-50'
+                        : 'bg-[#12161D] border border-relay-surface-border text-relay-ink-600 hover:bg-relay-navy-50'
                     }`}
                   >
                     {f.label}

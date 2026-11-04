@@ -33,13 +33,13 @@ export default function MissionPage() {
         <div className="space-y-8 max-w-6xl mx-auto">
           {run.status === 'idle' ? (
             <div
-              className="rounded-lg border border-relay-surface-border bg-white shadow-card px-6 py-12 text-center"
+              className="rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-6 py-12 text-center"
               role="status"
               aria-label="No active mission"
             >
-              <p className="text-xl font-semibold tracking-tight text-relay-ink-900">
+              <h1 className="text-[32px] leading-[40px] font-semibold tracking-tight text-[#E8EAED]">
                 No active mission
-              </p>
+              </h1>
               <p className="mt-2 text-sm text-relay-ink-500 max-w-md mx-auto">
                 Missions you start from the Command Center run here. Past missions live under Runs.
               </p>

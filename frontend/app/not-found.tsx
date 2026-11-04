@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <div className="flex-1 flex items-center justify-center py-20">
       <Container size="sm">
-        <Card className="border-relay-surface-border bg-white">
+        <Card className="border-relay-surface-border bg-[#12161D]">
           <CardContent className="p-8 text-center flex flex-col items-center">
             <div className="h-10 w-10 rounded-full bg-relay-navy-50 text-relay-ink-700 flex items-center justify-center mb-4">
               <Compass className="h-5 w-5" aria-hidden />

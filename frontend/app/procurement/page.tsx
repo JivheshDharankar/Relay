@@ -117,9 +117,9 @@ export default function ProcurementPage() {
           {sessionStatus === 'authenticated' && (
             <>
               {/* Lifecycle orientation */}
-              <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-relay-surface-border border border-relay-surface-border rounded-lg overflow-hidden" aria-label="Procurement lifecycle">
+              <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-relay-surface-border border border-relay-surface-border rounded-2xl overflow-hidden" aria-label="Procurement lifecycle">
                 {LIFECYCLE.map((item, i) => (
-                  <li key={item.step} className="bg-white px-4 py-3.5">
+                  <li key={item.step} className="bg-[#12161D] px-4 py-3.5">
                     <p className="font-mono text-[11px] text-relay-teal-600">{String(i + 1).padStart(2, '0')}</p>
                     <p className="text-[13px] font-semibold text-relay-ink-900 mt-1">{item.step}</p>
                     <p className="text-xs text-relay-ink-500 leading-relaxed mt-0.5">{item.text}</p>

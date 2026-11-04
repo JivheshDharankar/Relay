@@ -49,7 +49,7 @@ export default function UnderstandStagePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <blockquote className="rounded-lg bg-relay-navy-50 border border-relay-surface-border px-4 py-3.5 text-[15px] text-relay-ink-900 leading-relaxed">
+                <blockquote className="rounded-2xl bg-relay-navy-50 border border-relay-surface-border px-4 py-3.5 text-[15px] text-relay-ink-900 leading-relaxed">
                   “{run.prompt}”
                 </blockquote>
               </CardContent>

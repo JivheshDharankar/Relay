@@ -58,11 +58,14 @@ export default function ReconciliationHubPage() {
     <div className="py-6 sm:py-10">
       <Container size="xl">
         <div className="space-y-8 max-w-5xl mx-auto">
-          <PageHeader
-            eyebrow="Finance"
-            title="Reconciliation"
-            description="Financial conservation proof — every rupee and unit traced from community demand to resident allocation."
-          />
+          <div className="relative">
+            <div aria-hidden className="pointer-events-none absolute -top-20 right-0 h-44 w-[420px] max-w-full rounded-full bg-[#0866FF]/10 blur-3xl" />
+            <PageHeader
+              eyebrow="Finance · Reconciliation"
+              title="Every rupee and every unit, traced from community demand to your allocation."
+              description="Computed by code, never by the model. Values below are rendered exactly as the backend verified them."
+            />
+          </div>
 
           {sessionStatus === 'loading' && <LoadingState title="Loading reconciliation" />}
           {sessionStatus === 'anonymous' && <AuthRequiredState onSignIn={() => router.push('/login')} />}

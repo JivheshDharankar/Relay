@@ -16,10 +16,10 @@ import { MissionSessionProvider } from '@/lib/workflow/MissionSessionContext';
  */
 function PublicFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-relay-surface-bg text-relay-ink-900 flex flex-col">
+    <div className="min-h-screen bg-[#0A0D12] text-[#E8EAED] flex flex-col">
       <SessionTokenCatcher />
       <main className="flex-1 w-full flex flex-col">{children}</main>
-      <footer className="border-t border-relay-surface-border bg-white">
+      <footer className="border-t border-[#1E242E] bg-[#0D1117]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-xs text-relay-ink-500">
           <span>Relay — autonomous community procurement</span>
           <span>State shown is backend-verified</span>
@@ -42,12 +42,12 @@ function OnboardingFrame({
   onSignOut: () => void;
 }) {
   return (
-    <div className="min-h-screen bg-relay-surface-bg text-relay-ink-900 flex flex-col">
+    <div className="min-h-screen bg-[#0A0D12] text-[#E8EAED] flex flex-col">
       <SessionTokenCatcher />
-      <header className="border-b border-relay-surface-border bg-white">
+      <header className="border-b border-[#262C37] bg-[#0D1117]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-relay-navy-900 shrink-0">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-relay-gradient shrink-0">
               <span className="text-white text-[11px] font-bold tracking-tight" aria-hidden>R</span>
             </span>
             <div className="leading-tight min-w-0">
@@ -65,7 +65,7 @@ function OnboardingFrame({
         </div>
       </header>
       <main className="flex-1 w-full flex flex-col">{children}</main>
-      <footer className="border-t border-relay-surface-border bg-white">
+      <footer className="border-t border-[#1E242E] bg-[#0D1117]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-xs text-relay-ink-500">
           <span>Relay — autonomous community procurement</span>
           <span>State shown is backend-verified</span>

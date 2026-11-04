@@ -33,7 +33,7 @@ function EvidenceLink({ href, icon: Icon, label }: { href: string; icon: React.C
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-relay-surface-border bg-white px-3 py-2 text-[13px] font-semibold text-relay-primary-600 hover:border-relay-primary-500/50 hover:bg-relay-primary-50/50 transition-colors min-h-[40px]"
+      className="inline-flex items-center gap-1.5 rounded-2xl border border-relay-surface-border bg-[#12161D] px-3 py-2 text-[13px] font-semibold text-relay-primary-600 hover:border-relay-primary-500/50 hover:bg-relay-primary-50/50 transition-colors min-h-[40px]"
     >
       <Icon className="h-4 w-4" aria-hidden />
       {label}
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
               </div>
 
               {/* Order lifecycle: every step is a recorded fact, in order. */}
-              <ol className="flex flex-wrap items-start gap-x-1 gap-y-3 rounded-lg border border-relay-surface-border bg-white shadow-card px-5 py-4" aria-label="Order lifecycle">
+              <ol className="flex flex-wrap items-start gap-x-1 gap-y-3 rounded-2xl border border-relay-surface-border bg-[#12161D] shadow-none px-5 py-4" aria-label="Order lifecycle">
                 {lifecycle.map((step, i) => (
                   <li key={step.label} className="flex items-start gap-1 min-w-[104px] flex-1">
                     <span className="flex flex-col items-center gap-1.5 text-center w-full">
@@ -207,8 +207,8 @@ export default function OrderDetailPage() {
                             : step.state === 'failed'
                               ? 'bg-relay-danger-600 border-relay-danger-600 text-white'
                               : step.state === 'current'
-                                ? 'bg-white border-relay-teal-600 text-relay-teal-700'
-                                : 'bg-white border-relay-surface-border text-relay-ink-400'
+                                ? 'bg-[#12161D] border-relay-teal-600 text-relay-teal-700'
+                                : 'bg-[#12161D] border-relay-surface-border text-relay-ink-400'
                         }`}
                         aria-hidden
                       >

@@ -49,13 +49,14 @@ export function CommandComposer({
 
   return (
     <section aria-label="New procurement request" className="space-y-3">
-      <div
-        className={`rounded-lg border bg-white shadow-card overflow-hidden transition-colors ${
-          isProcessing || disabled
-            ? 'border-relay-surface-border'
-            : 'border-relay-surface-border focus-within:border-relay-primary-500 focus-within:ring-2 focus-within:ring-relay-primary-500/20'
-        }`}
-      >
+      <div className="rounded-2xl bg-relay-gradient p-px">
+        <div
+          className={`rounded-[15px] bg-[#12161D] overflow-hidden transition-shadow ${
+            isProcessing || disabled
+              ? ''
+              : 'focus-within:shadow-[0_0_0_3px_rgba(8,102,255,0.25)]'
+          }`}
+        >
         <label htmlFor="relay-command" className="sr-only">
           What do you need?
         </label>
@@ -102,7 +103,7 @@ export function CommandComposer({
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-relay-ink-400" aria-hidden />
-              12-hour operational SLA
+              12-hour procurement SLA
             </span>
           </div>
           <Button
@@ -117,6 +118,7 @@ export function CommandComposer({
             {isProcessing ? 'Starting mission…' : 'Ask Relay'}
             {!isProcessing && <ArrowRight className="h-4 w-4" aria-hidden />}
           </Button>
+        </div>
         </div>
       </div>
 

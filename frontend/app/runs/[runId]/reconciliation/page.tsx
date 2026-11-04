@@ -43,7 +43,7 @@ export default function ReconciliationStagePage() {
                   {['Community demand', 'Supplier PO', 'Payment provider', 'Resident allocation'].map(
                     (label, i, arr) => (
                       <li key={label}>
-                        <div className="rounded-lg border border-relay-surface-border bg-relay-navy-50/60 px-4 py-2.5 text-sm font-semibold text-relay-ink-900 text-center">
+                        <div className="rounded-2xl border border-relay-surface-border bg-relay-navy-50/60 px-4 py-2.5 text-sm font-semibold text-relay-ink-900 text-center">
                           {label}
                         </div>
                         {i < arr.length - 1 && (

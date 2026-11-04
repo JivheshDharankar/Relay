@@ -160,7 +160,7 @@ export default function ReconciliationDetailPage() {
                     </Button>
                     <Link
                       href={`/allocation/${communityOrderId}`}
-                      className="inline-flex items-center justify-center text-sm px-4 py-2 gap-2 min-h-[38px] font-semibold rounded-lg border border-transparent text-relay-primary-600 hover:bg-relay-primary-50 transition-colors"
+                      className="inline-flex items-center justify-center text-sm px-4 py-2 gap-2 min-h-[38px] font-semibold rounded-2xl border border-transparent text-relay-primary-600 hover:bg-relay-primary-50 transition-colors"
                     >
                       View allocation
                     </Link>

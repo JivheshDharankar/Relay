@@ -61,7 +61,7 @@ export default function NegotiationStagePage() {
                 <ol className="space-y-1">
                   {evidence.rounds.map((round, index) => (
                     <li key={`${round.tool}-${index}`}>
-                      <div className="flex items-start gap-3 rounded-lg border border-relay-surface-border bg-white px-4 py-3.5">
+                      <div className="flex items-start gap-3 rounded-2xl border border-relay-surface-border bg-[#12161D] px-4 py-3.5">
                         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-relay-navy-900 text-white shrink-0">
                           <Handshake className="h-4 w-4" aria-hidden />
                         </span>

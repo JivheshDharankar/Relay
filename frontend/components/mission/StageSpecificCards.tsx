@@ -104,7 +104,7 @@ function UnderstandStageCard({ intent }: StageCardProps) {
   return (
     <div className="space-y-3">
       {/* AI Explanation banner */}
-      <div className="rounded-lg bg-relay-navy-50/80 border border-relay-navy-100 p-3 text-xs text-relay-ink-700 leading-relaxed flex items-start gap-2">
+      <div className="rounded-2xl bg-relay-navy-50/80 border border-relay-navy-100 p-3 text-xs text-relay-ink-700 leading-relaxed flex items-start gap-2">
         <BrainCircuit className="h-4 w-4 text-relay-primary-600 shrink-0 mt-0.5" aria-hidden />
         <div>
           <strong className="text-relay-ink-900">Intent Recognized:</strong> Relay mapped your natural-language request into structured procurement requirements.
@@ -112,12 +112,12 @@ function UnderstandStageCard({ intent }: StageCardProps) {
       </div>
 
       {/* Identified Products */}
-      <div className="rounded-lg border border-relay-surface-border bg-white p-3.5 space-y-2">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-3.5 space-y-2">
         <p className="text-[11px] font-bold uppercase tracking-wider text-relay-ink-500">
           Identified Procurement Products & Units
         </p>
 
-        <div className="rounded-lg border border-relay-surface-border bg-relay-surface-bg p-2.5">
+        <div className="rounded-2xl border border-relay-surface-border bg-relay-surface-bg p-2.5">
           {items && items.length > 1 ? (
             <>
               <ul className="divide-y divide-relay-surface-border">
@@ -211,7 +211,7 @@ function DiscoverStageCard({ suppliers }: StageCardProps) {
           {suppliers.suppliers.slice(0, 3).map((sup, idx) => (
             <div
               key={sup.supplierId || idx}
-              className="rounded-lg border border-relay-surface-border bg-white p-2.5 space-y-1 shadow-sm"
+              className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-2.5 space-y-1 shadow-sm"
             >
               <div className="flex items-center justify-between gap-1">
                 <p className="text-xs font-bold text-relay-ink-900 truncate">{sup.supplierName}</p>
@@ -271,7 +271,7 @@ function QualifyStageCard({ suppliers }: StageCardProps) {
       {anyPassed ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 text-xs">
           {gates.map((label) => (
-            <div key={label} className="rounded-lg border border-relay-surface-border bg-white p-2 flex items-center gap-2">
+            <div key={label} className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-2 flex items-center gap-2">
               <CheckCircle className="h-3.5 w-3.5 text-relay-success-600 shrink-0" aria-hidden />
               <span className="text-[11px] font-medium text-relay-ink-800 leading-tight">{label}</span>
             </div>
@@ -302,14 +302,14 @@ function QuoteStageCard({ quotes }: StageCardProps) {
       </p>
 
       {quotes?.commercialBasisSimulated === true && (
-        <p className="rounded-lg border border-relay-surface-border bg-relay-surface-sunken px-3 py-2 text-[11px] leading-relaxed text-relay-ink-600">
+        <p className="rounded-2xl border border-relay-surface-border bg-relay-surface-sunken px-3 py-2 text-[11px] leading-relaxed text-relay-ink-600">
           <strong className="font-semibold text-relay-ink-800">Commercial quote simulated.</strong>{' '}
           Supplier identity and discovery are real; commercial response is simulated.
         </p>
       )}
 
       {offers.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-relay-surface-border bg-white">
+        <div className="overflow-x-auto rounded-2xl border border-relay-surface-border bg-[#12161D]">
           <table className="w-full text-left text-xs">
             <thead className="bg-relay-surface-sunken text-relay-ink-500 font-semibold border-b border-relay-surface-border">
               <tr>
@@ -361,7 +361,7 @@ function QuoteStageCard({ quotes }: StageCardProps) {
           </table>
         </div>
       ) : (
-        <div className="rounded-lg border border-relay-surface-border bg-white p-3 text-xs text-relay-ink-600">
+        <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-3 text-xs text-relay-ink-600">
           Ranked normalized wholesale offers with price and operational metrics.
         </div>
       )}
@@ -376,12 +376,12 @@ function NegotiateStageCard({ negotiation }: StageCardProps) {
   return (
     <div className="space-y-3">
       {hasRounds ? (
-        <div className="rounded-lg border border-relay-success-200 bg-relay-success-50/50 p-4 space-y-2">
+        <div className="rounded-2xl border border-relay-success-200 bg-relay-success-50/50 p-4 space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-relay-success-800 uppercase tracking-wider">
               Collective Demand Leverage
             </span>
-            <span className="font-mono text-relay-success-700 font-bold bg-white px-2 py-0.5 rounded border border-relay-success-200">
+            <span className="font-mono text-relay-success-700 font-bold bg-[#12161D] px-2 py-0.5 rounded border border-relay-success-200">
               Volume Terms Verified
             </span>
           </div>
@@ -396,7 +396,7 @@ function NegotiateStageCard({ negotiation }: StageCardProps) {
                   {idx < negotiation.rounds.length - 1 && (
                     <span aria-hidden className="absolute left-[13px] top-7 bottom-0 w-px bg-relay-success-600/30" />
                   )}
-                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-relay-success-600/40 font-mono text-[10px] font-bold text-relay-success-700">
+                  <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#12161D] border border-relay-success-600/40 font-mono text-[10px] font-bold text-relay-success-700">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <div className="min-w-0 pt-0.5">
@@ -411,7 +411,7 @@ function NegotiateStageCard({ negotiation }: StageCardProps) {
           </ol>
         </div>
       ) : (
-        <div className="rounded-lg border border-relay-surface-border bg-white p-4 text-xs text-relay-ink-600 space-y-1">
+        <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 text-xs text-relay-ink-600 space-y-1">
           <p className="font-semibold text-relay-ink-800">
             No negotiation round in this run — selection proceeded on quoted terms.
           </p>
@@ -440,7 +440,7 @@ function SelectStageCard({ quotes }: StageCardProps) {
 
   if (!winnerName && !selected) {
     return (
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 text-xs text-relay-ink-600">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 text-xs text-relay-ink-600">
         No backend-selected winner in this run — selection evidence was not recorded.
       </div>
     );
@@ -459,7 +459,7 @@ function SelectStageCard({ quotes }: StageCardProps) {
         </span>
       </div>
 
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs text-relay-ink-500">
             Selected Winning Supplier
@@ -505,7 +505,7 @@ function CommitStageCard({ commitment }: StageCardProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 space-y-3">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 space-y-3">
         <div className="flex items-center justify-between text-xs border-b border-relay-surface-border pb-2.5">
           <span className="text-relay-ink-600 font-medium">Community Purchase Commitment</span>
           <span className="font-mono font-bold text-relay-ink-900 bg-relay-surface-sunken px-2 py-0.5 rounded">
@@ -539,7 +539,7 @@ function PayStageCard({ payment, profile }: StageCardProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 space-y-3 shadow-sm">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 space-y-3 shadow-sm">
         <div className="flex items-center justify-between text-xs border-b border-relay-surface-border pb-2">
           <div className="flex items-center gap-1.5">
             <CreditCard className="h-4 w-4 text-relay-primary-600" />
@@ -594,7 +594,7 @@ function FulfillStageCard({ fulfillment, quotes }: StageCardProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 space-y-3">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 space-y-3">
         <div className="flex items-center justify-between text-xs border-b border-relay-surface-border pb-2">
           <div className="flex items-center gap-1.5">
             <Truck className="h-4 w-4 text-relay-primary-600" />
@@ -636,7 +636,7 @@ function VerifyStageCard({ fulfillment }: StageCardProps) {
   const verifier = fulfillment?.verifiedBy ?? null;
   return (
     <div className="space-y-2">
-      <div className="rounded-lg border border-relay-success-200 bg-relay-success-50/40 p-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="rounded-2xl border border-relay-success-200 bg-relay-success-50/40 p-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-relay-success-600" />
           <div>
@@ -651,7 +651,7 @@ function VerifyStageCard({ fulfillment }: StageCardProps) {
             </p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-relay-success-700 bg-white border border-relay-success-200 px-2.5 py-1 rounded-full">
+        <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-relay-success-700 bg-[#12161D] border border-relay-success-200 px-2.5 py-1 rounded-full">
           VERIFIED
         </span>
       </div>
@@ -666,7 +666,7 @@ function AllocateStageCard({ profile, allocation }: StageCardProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-relay-surface-border bg-white p-4 space-y-2.5">
+      <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-4 space-y-2.5">
         <div className="flex items-center justify-between text-xs border-b border-relay-surface-border pb-2">
           <div className="flex items-center gap-1.5 text-relay-ink-700 font-semibold">
             <Building2 className="h-4 w-4 text-relay-primary-600" />
@@ -697,7 +697,7 @@ function ReconcileStageCard({ recon }: StageCardProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-relay-success-300 bg-relay-success-50/50 p-4 space-y-2">
+      <div className="rounded-2xl border border-relay-success-300 bg-relay-success-50/50 p-4 space-y-2">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5">
             <Scale className="h-4 w-4 text-relay-success-700" />
@@ -705,7 +705,7 @@ function ReconcileStageCard({ recon }: StageCardProps) {
               Four-Pillar Mathematical Balancing
             </span>
           </div>
-          <span className="font-mono text-xs font-bold text-relay-success-700 bg-white border border-relay-success-200 px-2 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-relay-success-700 bg-[#12161D] border border-relay-success-200 px-2 py-0.5 rounded">
             Δ = {diff === null ? '—' : `₹${diff}`}
           </span>
         </div>
@@ -723,9 +723,9 @@ function ReconcileStageCard({ recon }: StageCardProps) {
 /** 13 COMPLETE */
 function CompleteStageCard(_props: StageCardProps) {
   return (
-    <div className="rounded-lg border border-relay-success-100 bg-relay-success-50 p-4 flex items-center justify-between gap-3">
+    <div className="rounded-2xl border border-relay-success-100 bg-relay-success-50 p-4 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-white border border-relay-success-100 text-relay-success-600">
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#12161D] border border-relay-success-100 text-relay-success-600">
           <CheckCircle className="h-4 w-4" aria-hidden />
         </span>
         <div>
@@ -747,7 +747,7 @@ function CompleteStageCard(_props: StageCardProps) {
 /** Fallback */
 function DefaultStageCard({ evidence }: StageCardProps) {
   return (
-    <div className="rounded-lg border border-relay-surface-border bg-white p-3 text-xs text-relay-ink-700">
+    <div className="rounded-2xl border border-relay-surface-border bg-[#12161D] p-3 text-xs text-relay-ink-700">
       {evidence.summary}
     </div>
   );

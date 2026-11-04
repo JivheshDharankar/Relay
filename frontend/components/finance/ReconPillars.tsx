@@ -65,11 +65,11 @@ export function ReconPillars({ evidence }: { evidence: ReconEvidence }) {
           {evidence.pillars.length === 0 ? (
             <p className="text-sm text-relay-ink-600">No pillar values in this reconciliation evidence.</p>
           ) : (
-            <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-relay-surface-border rounded-lg border border-relay-surface-border overflow-hidden">
+            <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-relay-surface-border rounded-2xl border border-relay-surface-border overflow-hidden">
               {evidence.pillars.map((pillar, i) => (
                 <li
                   key={pillar.label}
-                  className="bg-white px-4 py-4"
+                  className="bg-[#12161D] px-4 py-4"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-relay-ink-500">
                     {i + 1}. {pillar.label}
@@ -84,7 +84,7 @@ export function ReconPillars({ evidence }: { evidence: ReconEvidence }) {
           )}
           <div
             className={cn(
-              'mt-4 rounded-lg border px-4 sm:px-5 py-4 leading-relaxed',
+              'mt-4 rounded-2xl border px-4 sm:px-5 py-4 leading-relaxed',
               balanced
                 ? 'border-relay-success-100 bg-relay-success-50'
                 : 'border-relay-warn-100 bg-relay-warn-50'
