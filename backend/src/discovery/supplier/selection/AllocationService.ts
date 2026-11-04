@@ -82,9 +82,9 @@ export class AllocationService {
 
       // 2. Delivery fee & charges for this supplier allocation
       // If split order, each supplier charges their quoted delivery fee and tax
-      const deliveryFeeDecimal = roundMoney(toDecimal(quote.deliveryFee));
-      const taxDecimal = roundMoney(toDecimal(quote.tax));
-      const otherChargesDecimal = roundMoney(toDecimal(quote.otherCharges));
+      const deliveryFeeDecimal = roundMoney(toDecimal(quote.deliveryFee ?? 0));
+      const taxDecimal = roundMoney(toDecimal(quote.tax ?? 0));
+      const otherChargesDecimal = roundMoney(toDecimal(quote.otherCharges ?? 0));
 
       // 3. Allocation total = lineSubtotal + deliveryFee + tax + otherCharges
       const allocationTotalDecimal = roundMoney(

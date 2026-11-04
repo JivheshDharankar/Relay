@@ -4,6 +4,10 @@ import { ModelRequest, ToolModelRequest, ModelResponse, ToolCall } from './types
 import { SEED_IDS } from '../../config/seedConstants';
 import { INTENT_TOOL_NAME, normalizeIntentUnit, singularizeContainerWord } from '../intent/intentSchema';
 import {
+  normalizeDevanagariNumerals,
+  normalizeIndicNumberWords,
+} from '../intent/multilingual';
+import {
   BARE_PRICE_MARKER_RE,
   PRICE_CUE_RE,
   findNextSegmentQty,
@@ -80,9 +84,10 @@ function findUnmappedSegment(text: string): string | null {
  * items; genuinely missing facts surface as targeted clarification issues.
  */
 const SEGMENT_UNIT_WORDS =
-  'kg|kilos?|kilograms?|grams?|gms?|g|litres?|liters?|l|mls?|packs?|packets?|bottles?|jars?|cans?|boxes?|box|cartons?|dozens?|dz|tins?|pouches?|sachets?|bags?|crates?|rolls?|tubes?|strips?|units?|pieces?|pcs?|each|bars?|tetra[-\\s]?packs?|tetrapacks?|cups?|glasses?';
+  'kg|kilos?|kilograms?|grams?|gms?|g|litres?|liters?|l|mls?|packs?|packets?|bottles?|jars?|cans?|boxes?|box|cartons?|dozens?|dz|tins?|pouches?|sachets?|bags?|crates?|rolls?|tubes?|strips?|units?|pieces?|pcs?|each|bars?|tetra[-\\s]?packs?|tetrapacks?|cups?|glasses?|quintals?|quintal|किलो|किलोग्राम|ग्राम|ग्रॅम|लीटर|लिटर|मिली|पॅकेट|पॅकेट्स|पॉकेट|पॅक|डबा|डबे|बाटली|बाटल्या|बॅग|बॅगा|नग|तुकडे|कुंतल|क्विंटल';
 
-const SEGMENT_BOUNDARY_RE = /,|\+|;|\.|\band\b|\baur\b|&|\bwithin\b|\bfor\b|\bwith\b/i;
+const SEGMENT_BOUNDARY_RE =
+  /,|\+|;|\.|\band\b|\baur\b|\bani\b|&|\bwithin\b|\bfor\b|\bwith\b|।|आणि|और|तसेच|चाहिए|हवे\s+आहेत|हवा\s+आहे|हवी\s+आहे|\bpahije\b/ui;
 
 const PRICED_ONES_MARKER_RE = /\b(wale|wali|wale|ke|ki|ka)\b/i;
 const PACK_SIZE_LEAD_RE = /^(\d+(?:\.\d+)?)\s*(ml|g|kg|l|litres?|liters?|grams?)\b/i;
@@ -142,8 +147,8 @@ function parseGenericSegments(text: string): GenericSegment[] {
   const insidePriceSpan = (index: number): boolean =>
     priceSpans.some((s) => index >= s.start && index < s.end);
 
-  const unitAfterQtyRe = new RegExp(`^\\s*(${SEGMENT_UNIT_WORDS})\\b`, 'i');
-  const trailingUnitRe = new RegExp(`^(.*?)\\s+(${SEGMENT_UNIT_WORDS})$`, 'i');
+  const unitAfterQtyRe = new RegExp(`^\\s*(${SEGMENT_UNIT_WORDS})(?=$|[^\\p{L}\\p{M}\\p{N}])`, 'ui');
+  const trailingUnitRe = new RegExp(`^(.*?)\\s+(${SEGMENT_UNIT_WORDS})$`, 'ui');
 
   QTY_RE.lastIndex = 0;
   let qm: RegExpExecArray | null;
@@ -211,16 +216,29 @@ function parseGenericSegments(text: string): GenericSegment[] {
         phrase = trailing[1].trim();
       }
     }
+    // Clean trailing Indic verb phrases (e.g. chahiye, pahije, hava ahe, tulna kara)
+    phrase = phrase
+      .replace(/\s*(चाहिए|हवे\s+आहेत|हवा\s+आहे|हवी\s+आहे|pahije|dhoondo|dhundo|shodha|tulanā|tulna|compare).*$/ui, '')
+      .trim();
+
+    // Check negation on this segment (e.g. "100 kilo rice nahi" or "10 kg nahi")
+    const isNegated =
+      /\b(nahi|nahin|not|nako|नाही|नहीं|नको)\b/ui.test(headText) ||
+      /\b(nahi|nahin|not|nako|नाही|नहीं|नको)\b/ui.test(rest.slice(0, 20));
+    if (isNegated) {
+      continue; // Dropped because explicitly negated by the resident
+    }
+
     if (!phrase) {
       // Product-before-quantity order ("sugar 2 kg"): scan back over
       // letter words up to the previous boundary. Request verbs are never
       // products ("I need 5" must not emit "I need").
       const before = text.slice(0, qm.index);
-      const words = before.match(/[a-zA-Z]+/g) ?? [];
+      const words = before.match(/[\p{L}\p{M}]+/gu) ?? [];
       phrase = words
         .slice(-4)
         .join(' ')
-        .replace(/^(i\s+need|need|want|get|buy|order|please)\b/i, '')
+        .replace(/^(i\s+need|need|want|get|buy|order|please|mujhe|hume|mala|aamhala|aamhala|मुझे|आम्हाला|मला|हमे|हमें)\b/ui, '')
         .trim();
     }
     if (!phrase || isSkippablePhrase(phrase.toLowerCase())) continue;
@@ -232,7 +250,13 @@ function parseGenericSegments(text: string): GenericSegment[] {
       unit = 'pack';
     }
 
-    const segment: GenericSegment = { productName: phrase, quantity };
+    let finalQty = quantity;
+    if (unit && /^(quintal|quintals|कुंतल|क्विंटल)$/i.test(unit)) {
+      finalQty = quantity * 100;
+      unit = 'kg';
+    }
+
+    const segment: GenericSegment = { productName: phrase, quantity: finalQty };
     if (unit) {
       segment.unit = unit;
       const canonical = normalizeIntentUnit(unit);
@@ -562,7 +586,8 @@ export class MockModelProvider implements ModelProvider {
     const userMessage = [...request.messages]
       .reverse()
       .find((m) => m.role === 'user');
-    const text = userMessage?.content || '';
+    const rawText = userMessage?.content || '';
+    const text = normalizeIndicNumberWords(normalizeDevanagariNumerals(rawText));
     const segments = parseGenericSegments(text);
 
     if (segments.length === 0) {

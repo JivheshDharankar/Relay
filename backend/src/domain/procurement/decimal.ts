@@ -1,12 +1,15 @@
 import { Prisma } from '@prisma/client';
 
-export type DecimalLike = Prisma.Decimal | number | string;
+export type DecimalLike = Prisma.Decimal | number | string | undefined | null;
 
 /**
  * Coerces a numeric value or string safely into a Prisma.Decimal.
- * Never allows NaN or infinite values.
+ * Treats undefined or null as 0. Never allows NaN or infinite values.
  */
-export function toDecimal(val: DecimalLike): Prisma.Decimal {
+export function toDecimal(val?: DecimalLike | null): Prisma.Decimal {
+  if (val === undefined || val === null) {
+    return new Prisma.Decimal(0);
+  }
   if (val instanceof Prisma.Decimal) {
     return val;
   }
